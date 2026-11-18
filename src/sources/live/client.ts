@@ -107,7 +107,8 @@ export class PostHogReadOnlyClient {
     let delay = 1_000;
     while (isPending(response)) {
       if (Date.now() > deadline) throw new ApiError(`Query ${query.name} did not finish in ${this.queryTimeoutMs / 1000}s`, { status: null, path: 'query' });
-      const id = String((response as { query_status: { id: unknown } }).query_status.id ?? '');
+      const rawId = (response as { query_status: { id?: unknown } }).query_status.id;
+      const id = typeof rawId === 'string' || typeof rawId === 'number' ? String(rawId) : '';
       if (!/^[A-Za-z0-9_-]+$/.test(id)) throw new ApiError('PostHog returned an invalid query id', { status: null, path: 'query' });
       await this.sleep(delay);
       delay = Math.min(delay * 2, 5_000);
@@ -261,7 +262,8 @@ function isPending(response: unknown): boolean {
   const status = (response as { query_status?: { complete?: unknown; error?: unknown; error_message?: unknown } } | null)?.query_status;
   if (!status || typeof status !== 'object') return false;
   if (status.error === true || typeof status.error_message === 'string') {
-    throw new ApiError(`Query failed in PostHog: ${String(status.error_message ?? 'unknown error')}`, { status: null, path: 'query' });
+    const reason = typeof status.error_message === 'string' ? status.error_message : 'unknown error';
+    throw new ApiError(`Query failed in PostHog: ${reason}`, { status: null, path: 'query' });
   }
   return status.complete !== true;
 }

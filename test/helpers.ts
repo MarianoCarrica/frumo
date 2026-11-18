@@ -1,3 +1,4 @@
+import { runInNewContext } from 'node:vm';
 import { AnalysisContext } from '../src/analysis/context.js';
 import type { AnalysisOptions, AnalyzerOutput } from '../src/analysis/context.js';
 import { runAnalysis } from '../src/analysis/index.js';
@@ -102,11 +103,19 @@ export function mockFetch(route: Route): { fetch: typeof fetch; calls: RecordedC
     calls.push(call);
     return route(call);
   };
-  return { fetch: fn as typeof fetch, calls };
+  return { fetch: fn, calls };
 }
 
 export function json(body: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', ...headers } });
 }
 
-export const noSleep = async (): Promise<void> => undefined;
+export const noSleep = (): Promise<void> => Promise.resolve();
+
+/**
+ * Runs generated JavaScript (snippets, regex literals, the combined posthog.init diff) in an
+ * isolated vm context and returns the value of its last expression.
+ */
+export function evaluate<T>(code: string, globals: Record<string, unknown> = {}): T {
+  return runInNewContext(code, { ...globals }) as T;
+}

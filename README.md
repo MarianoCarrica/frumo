@@ -349,23 +349,24 @@ Exit codes: `0` success, `1` failure (API, file or validation error), `2` usage 
 ## Development
 
 ```sh
-npm install
-npm test             # vitest; no network (the PostHog API is a mocked fetch)
-npm run typecheck
+npm ci               # exact versions from package-lock.json
+npm run lint         # ESLint 9 flat config + typescript-eslint (type-aware)
+npm run typecheck    # tsc --noEmit (no build needed)
+npm test             # vitest; no network (the PostHog API is a mocked fetch); no build needed
 npm run build        # TypeScript → dist/
 npm run demo         # build + run the demo
-npm run check        # typecheck + test + build
+npm run check        # lint + typecheck + test + build
 node scripts/make-demo-fixture.mjs   # regenerate fixtures/demo-snapshot.json
 ```
 
-Zero runtime dependencies (Node's built-in `fetch` and `util.parseArgs`). Code map:
+TypeScript is pinned to 6.0.x because typescript-eslint supports TypeScript below 6.1. Zero runtime dependencies (Node's built-in `fetch` and `util.parseArgs`). Code map:
 
 - `src/pricing/`: the price list (one file), graduated-tier math, `--pricing` overrides
 - `src/snapshot.ts`: the snapshot format and its validator
 - `src/sources/`: demo fixture, `--from` files (JSON/CSV), and live mode (`live/client.ts` read-only client, `live/queries.ts` hard-coded HogQL, `live/collect.ts`)
 - `src/analysis/`: one analyzer per area in `analyzers/`, the cost model, fix ranking, snippets and the combined diff
 - `src/report/`: terminal, HTML and JSON output
-- `test/`: unit tests per module, a fake PostHog API, and repository rules (one price source, Node 18-safe APIs, documented env vars only)
+- `test/`: unit tests per module, a fake PostHog API, and repository rules (one price source, Node 18-safe APIs, documented env vars only, CI scripts runnable without a build)
 
 ## Disclaimer and licence
 

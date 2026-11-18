@@ -15,6 +15,11 @@ export class ValidationError extends Error {
   }
 }
 
+/** Array.isArray narrows to any[]; this narrows to unknown[] so elements still need checking. */
+export function isArray(value: unknown): value is unknown[] {
+  return Array.isArray(value);
+}
+
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -46,7 +51,7 @@ export class Issues {
   }
 
   array(value: unknown, path: string, maxLength = 100_000): unknown[] | null {
-    if (!Array.isArray(value)) {
+    if (!isArray(value)) {
       this.add(path, `expected an array, got ${describe(value)}`);
       return null;
     }

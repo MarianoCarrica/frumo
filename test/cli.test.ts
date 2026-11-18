@@ -11,6 +11,8 @@ import { PROJECT, fakePostHog } from './fake-posthog.js';
 import { NOW, noSleep } from './helpers.js';
 
 const KEY = 'phx_CLIKEY0123456789abcdefghijklmnopqrstuvw';
+/** Start of an ANSI escape sequence (ESC + "["). */
+const ANSI = `${String.fromCharCode(27)}[`;
 const dir = mkdtempSync(join(tmpdir(), 'hogpost-test-'));
 
 function io(env: Record<string, string> = {}, fetchImpl?: typeof fetch) {
@@ -39,18 +41,18 @@ describe('CLI end to end', () => {
     expect(text).toMatch(/Total\s+\$1,568/);
     expect(text).toContain('not affiliated with PostHog Inc.');
     expect(text).toContain('Demo data: a fictional company');
-    expect(text).not.toMatch(/\u001b\[/); // no colors when not a TTY
+    expect(text).not.toContain(ANSI); // no colors when not a TTY
   });
 
   it('prints colors only on a TTY without NO_COLOR', async () => {
     const tty = io();
     tty.io.stdoutIsTTY = true;
     await main(['demo'], tty.io);
-    expect(tty.out()).toMatch(/\u001b\[1m/);
+    expect(tty.out()).toContain(`${ANSI}1m`);
     const noColor = io({ NO_COLOR: '1' });
     noColor.io.stdoutIsTTY = true;
     await main(['demo'], noColor.io);
-    expect(noColor.out()).not.toMatch(/\u001b\[/);
+    expect(noColor.out()).not.toContain(ANSI);
   });
 
   it('emits machine-readable JSON on stdout only', async () => {
@@ -150,8 +152,8 @@ describe('CLI end to end', () => {
   });
 
   it('redacts the key from API errors', async () => {
-    const leaky = async () => new Response(JSON.stringify({ detail: `bad key ${KEY}` }), { status: 401 });
-    const t = io({ HOGPOST_API_KEY: KEY }, leaky as unknown as typeof fetch);
+    const leaky = () => Promise.resolve(new Response(JSON.stringify({ detail: `bad key ${KEY}` }), { status: 401 }));
+    const t = io({ HOGPOST_API_KEY: KEY }, leaky);
     expect(await main(['--project', PROJECT], t.io)).toBe(1);
     expect(t.err()).toMatch(/401/);
     expect(t.err()).not.toContain(KEY);

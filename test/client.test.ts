@@ -18,8 +18,9 @@ function client(route: Parameters<typeof mockFetch>[0], options: { sleeps?: numb
     apiKey: new Secret(KEY),
     toolVersion: 'test',
     fetchImpl: mock.fetch,
-    sleep: async (ms) => {
+    sleep: (ms) => {
       sleeps.push(ms);
+      return Promise.resolve();
     },
     minIntervalMs: 0,
     ...(options.maxRetryAfterSeconds !== undefined ? { maxRetryAfterSeconds: options.maxRetryAfterSeconds } : {}),
@@ -163,10 +164,10 @@ describe('read-only client', () => {
 describe('API key handling', () => {
   it('never prints the key through String(), JSON or util.inspect', () => {
     const secret = new Secret(KEY);
+    // String() covers template literals and concatenation too: all three call toString().
     expect(String(secret)).toBe('[REDACTED]');
     expect(JSON.stringify({ secret })).toBe('{"secret":"[REDACTED]"}');
     expect(inspect({ secret })).not.toContain(KEY);
-    expect(`${secret}`).toBe('[REDACTED]');
     expect(secret.reveal()).toBe(KEY);
   });
 

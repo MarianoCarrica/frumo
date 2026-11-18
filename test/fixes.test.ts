@@ -5,7 +5,7 @@ import { niceLimit } from '../src/analysis/index.js';
 import { buildInitDiff, devHostRegexSource, escapeRegex, ingestionHost, jsString } from '../src/analysis/snippets.js';
 import { UrlClassifier, devHostReason, displayPath, parseUrlLoose } from '../src/analysis/url-class.js';
 import { publicPricing } from '../src/pricing/override.js';
-import { analyze, context, demo, snapshot, usage } from './helpers.js';
+import { analyze, context, demo, evaluate, snapshot, usage } from './helpers.js';
 
 /** Compiles JavaScript without running it (async body allowed for top-level await in snippets). */
 function compiles(code: string): void {
@@ -76,14 +76,17 @@ describe('fix generation on the demo data', () => {
       .join('\n');
     expect(() => compiles(code)).not.toThrow();
     // And it really calls posthog.init with an options object we can inspect.
-    let captured: Record<string, unknown> | null = null;
-    const runnable = code.replace(/^import .*$/m, '');
-    new Function('posthog', 'window', runnable)(
-      { init: (_token: string, options: Record<string, unknown>) => (captured = options) },
-      { location: { host: 'app.tidebrook.example', href: 'https://www.tidebrook.example/pricing' } },
-    );
-    expect(captured).not.toBeNull();
-    const options = captured as unknown as Record<string, unknown>;
+    const seen: { options?: Record<string, unknown> } = {};
+    evaluate(code.replace(/^import .*$/m, ''), {
+      posthog: {
+        init: (_token: string, options: Record<string, unknown>) => {
+          seen.options = options;
+        },
+      },
+      window: { location: { host: 'app.tidebrook.example', href: 'https://www.tidebrook.example/pricing' } },
+    });
+    expect(seen.options).toBeDefined();
+    const options = seen.options ?? {};
     expect(options.person_profiles).toBe('identified_only');
     expect(options.opt_out_capturing_by_default).toBe(false);
     expect(options.advanced_disable_feature_flags_on_first_load).toBe(true);

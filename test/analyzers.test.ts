@@ -13,7 +13,7 @@ import { SYSTEM_EVENT_NAME, analyzeServerEvents } from '../src/analysis/analyzer
 import { analyzeStaging } from '../src/analysis/analyzers/staging.js';
 import { applyEffects } from '../src/analysis/costs.js';
 import type { Fix } from '../src/analysis/model.js';
-import { context, events, project, run, snapshot, usage } from './helpers.js';
+import { context, evaluate, events, project, run, snapshot, usage } from './helpers.js';
 
 const fix = (fixes: Fix[], id: string): Fix => {
   const found = fixes.find((f) => f.id === id);
@@ -105,7 +105,7 @@ describe('autocapture', () => {
     const value = f.initOptions[0]?.value ?? '';
     expect(f.initOptions[0]?.key).toBe('autocapture.url_ignorelist');
     // The generated literal must be valid JavaScript and match only marketing URLs.
-    const re = new Function(`return ${value}`)() as RegExp[];
+    const re = evaluate<RegExp[]>(`(${value})`);
     expect(re.some((r) => r.test('https://www.acme.example/pricing'))).toBe(true);
     expect(re.some((r) => r.test('https://app.acme.example/dashboard'))).toBe(false);
   });
@@ -295,7 +295,7 @@ describe('bots', () => {
     expect(f.initOptions[0]).toMatchObject({ key: 'custom_blocked_useragents', value: "['Checkly']" });
     const server = f.snippets[0]?.code ?? '';
     expect(server).toMatch(/AhrefsBot/);
-    const re = new Function(`${server.split('\n')[0]}; return BOT_UA`)() as RegExp;
+    const re = evaluate<RegExp>(`${server.split('\n')[0]}; BOT_UA`);
     expect(re.test('Mozilla/5.0 (compatible; AhrefsBot/7.0)')).toBe(true);
     expect(re.test('Mozilla/5.0 (Macintosh) Safari/605.1.15')).toBe(false);
   });
@@ -327,7 +327,7 @@ describe('local, preview and staging hosts', () => {
     expect(effect(f, 'events')).toBeCloseTo(101_000 / 1_000_000, 6);
     expect(effect(f, 'recordings')).toBeCloseTo(0.1, 6);
     const preamble = f.initOptions[0]?.preamble?.[0] ?? '';
-    const isDevHost = (host: string) => new Function('window', `${preamble}; return isDevHost`)({ location: { host } }) as boolean;
+    const isDevHost = (host: string) => evaluate<boolean>(`${preamble}; isDevHost`, { window: { location: { host } } });
     for (const host of ['localhost:3000', 'localhost', 'acme-git-other-branch-acme.vercel.app', 'staging.acme.example', '192.168.1.20:8080']) {
       expect(isDevHost(host), host).toBe(true);
     }

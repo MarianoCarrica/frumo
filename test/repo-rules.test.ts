@@ -113,6 +113,18 @@ describe('repository rules', () => {
     }
   });
 
+  it('keeps lint, typecheck and test runnable straight after npm ci (CI runs them without a build)', () => {
+    const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as { scripts: Record<string, string> };
+    for (const script of ['lint', 'typecheck', 'test']) {
+      expect(pkg.scripts[script], `package.json needs a "${script}" script for CI`).toBeTypeOf('string');
+      expect(pkg.scripts[script], `"${script}" must not depend on a build: CI runs it right after npm ci`).not.toMatch(/\b(build|dist)\b/);
+    }
+    for (const name of readdirSync(join(root, 'test'))) {
+      const text = readFileSync(join(root, 'test', name), 'utf8');
+      expect(text, `test/${name} imports from dist/; import from ../src so tests run without a build`).not.toMatch(/from ['"][^'"]*\/dist\//);
+    }
+  });
+
   it('ships the CLI with a node shebang', () => {
     const cli = files.find((f) => f.path === join('src', 'cli.ts'))?.text ?? '';
     expect(cli.startsWith('#!/usr/bin/env node')).toBe(true);

@@ -365,7 +365,13 @@ function applyProjectNames(rows: ProjectUsage[], raw: unknown): ProjectUsage[] {
   return rows.map((r) => ({ ...r, name: r.name ?? names.get(r.projectId) ?? null }));
 }
 
-const str = (v: unknown): string | null => (v === null || v === undefined ? null : String(v));
+/** A HogQL cell as text: strings as-is, other primitives via String(), anything structured as JSON. */
+const str = (v: unknown): string | null => {
+  if (v === null || v === undefined) return null;
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number' || typeof v === 'boolean' || typeof v === 'bigint') return String(v);
+  return JSON.stringify(v);
+};
 const n = (v: unknown): number => {
   const x = typeof v === 'string' ? Number(v) : v;
   return typeof x === 'number' && Number.isFinite(x) && x >= 0 ? x : 0;
