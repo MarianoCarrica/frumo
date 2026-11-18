@@ -1,0 +1,54 @@
+{
+  "name": "eventspend",
+  "version": "0.1.0",
+  "description": "Unofficial, read-only CLI that finds what drives your PostHog bill and prints ready-to-paste fixes with dollar estimates. Not affiliated with PostHog Inc.",
+  "license": "MIT",
+  "author": "Mariano Ventures",
+  "private": false,
+  "type": "module",
+  "bin": {
+    "eventspend": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "fixtures/demo-snapshot.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.18"
+  },
+  "keywords": [
+    "posthog",
+    "analytics",
+    "billing",
+    "cost",
+    "audit",
+    "cli",
+    "session-replay",
+    "feature-flags"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && chmod +x dist/cli.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "demo": "npm run build && node dist/cli.js demo",
+    "check": "npm run typecheck && npm test && npm run build",
+    "fixture:demo": "node scripts/make-demo-fixture.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.1"
+  }
+}
