@@ -13,3 +13,4 @@ Read README.md first. Work on a branch and open a pull request; never push to ma
 ## Fix mistakes in code, not in instructions
 
 Repeated corrections become a check (lint rule, type, test), not prose. Fix failing checks at the root cause; never suppress or skip them. Features come with verification proof in the PR: test output, and screenshots for UI.
+
