@@ -1,0 +1,20 @@
+# Safety rules for HogPost: CI, hooks, check scripts, lint/type/test config and agent instructions.
+# A change to any of these paths changes what "checked" means, so it needs the owner's explicit OK.
+# Enforced on GitHub: agents push as nanocarrica and the main-gate ruleset requires a code-owner review,
+# so a pull request changing any path below cannot merge until @MarianoCarrica approves it. All other
+# pull requests merge with green checks and no approval.
+
+/.github/            @MarianoCarrica
+/.github/CODEOWNERS  @MarianoCarrica
+/AGENTS.md           @MarianoCarrica
+/CLAUDE.md           @MarianoCarrica
+/.husky/             @MarianoCarrica
+/.githooks/          @MarianoCarrica
+/scripts/check-*     @MarianoCarrica
+/eslint.config.js    @MarianoCarrica
+/eslint.config.mjs   @MarianoCarrica
+/eslint-rules/       @MarianoCarrica
+/tsconfig.json       @MarianoCarrica
+/vitest.config.ts    @MarianoCarrica
+/vitest.config.js    @MarianoCarrica
+/test/setup*         @MarianoCarrica

@@ -1,0 +1,91 @@
+# No secrets, no third-party network calls, no notifications.
+# Job ids (lint, typecheck, test) are required checks in the main-gate ruleset: never rename them.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - id: pkg
+        run: |
+          if [ -f package.json ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; fi
+      - name: Skip notice
+        if: steps.pkg.outputs.present != 'true'
+        run: echo "::notice::No package.json yet; skipping lint."
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        if: steps.pkg.outputs.present == 'true' && hashFiles('package-lock.json') != ''
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        if: steps.pkg.outputs.present == 'true' && hashFiles('package-lock.json') == ''
+        with:
+          node-version: 24
+      - run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
+        if: steps.pkg.outputs.present == 'true'
+      - run: npm run lint
+        if: steps.pkg.outputs.present == 'true'
+
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - id: pkg
+        run: |
+          if [ -f package.json ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; fi
+      - name: Skip notice
+        if: steps.pkg.outputs.present != 'true'
+        run: echo "::notice::No package.json yet; skipping typecheck."
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        if: steps.pkg.outputs.present == 'true' && hashFiles('package-lock.json') != ''
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        if: steps.pkg.outputs.present == 'true' && hashFiles('package-lock.json') == ''
+        with:
+          node-version: 24
+      - run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
+        if: steps.pkg.outputs.present == 'true'
+      - run: npm run typecheck
+        if: steps.pkg.outputs.present == 'true'
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - id: pkg
+        run: |
+          if [ -f package.json ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; fi
+      - name: Skip notice
+        if: steps.pkg.outputs.present != 'true'
+        run: echo "::notice::No package.json yet; skipping test."
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        if: steps.pkg.outputs.present == 'true' && hashFiles('package-lock.json') != ''
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        if: steps.pkg.outputs.present == 'true' && hashFiles('package-lock.json') == ''
+        with:
+          node-version: 24
+      - run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
+        if: steps.pkg.outputs.present == 'true'
+      - run: npm run test
+        if: steps.pkg.outputs.present == 'true'
