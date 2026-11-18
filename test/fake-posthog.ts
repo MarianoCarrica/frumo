@@ -1,5 +1,5 @@
 /**
- * A fake PostHog API for tests: answers the endpoints eventspend calls with documented response
+ * A fake PostHog API for tests: answers the endpoints HogPost calls with documented response
  * shapes. No network is involved; it plugs in as the client's fetch implementation.
  */
 import { buildQueries } from '../src/sources/live/queries.js';
@@ -12,11 +12,11 @@ export const STAGING = '456';
 const tier = (up_to: number | null, unit: string) => ({ up_to, unit_amount_usd: unit, flat_amount_usd: '0', current_amount_usd: '0.00', current_usage: 0 });
 
 export const QUERY_RESULTS: Record<string, { columns: string[]; results: unknown[][] }> = {
-  eventspend_totals: {
+  hogpost_totals: {
     columns: ['all_events', 'billable', 'billable_identified', 'unidentified_person_events'],
     results: [[3_300_000, 3_000_000, 1_500_000, 400_000]],
   },
-  eventspend_events_by_name: {
+  hogpost_events_by_name: {
     columns: ['event', 'total', 'identified'],
     results: [
       ['$autocapture', 1_500_000, 700_000],
@@ -27,12 +27,12 @@ export const QUERY_RESULTS: Record<string, { columns: string[]; results: unknown
       ['$feature_flag_called', 300_000, 300_000],
     ],
   },
-  eventspend_by_lib: { columns: ['lib', 'total', 'identified'], results: [['web', 2_700_000, 1_250_000], ['posthog-node', 300_000, 250_000]] },
-  eventspend_by_host: {
+  hogpost_by_lib: { columns: ['lib', 'total', 'identified'], results: [['web', 2_700_000, 1_250_000], ['posthog-node', 300_000, 250_000]] },
+  hogpost_by_host: {
     columns: ['host', 'total', 'identified'],
     results: [['app.acme.example', 1_700_000, 1_100_000], ['www.acme.example', 900_000, 400_000], ['localhost:3000', 100_000, 0]],
   },
-  eventspend_by_page: {
+  hogpost_by_page: {
     columns: ['host', 'path', 'total', 'identified', 'unidentified_person_events', 'pageviews', 'pageleaves', 'autocapture'],
     results: [
       ['app.acme.example', '/dashboard', 1_700_000, 1_100_000, 0, 300_000, 250_000, 800_000],
@@ -40,35 +40,35 @@ export const QUERY_RESULTS: Record<string, { columns: string[]; results: unknown
       ['localhost:3000', '/dashboard', 100_000, 0, 0, 50_000, 50_000, 0],
     ],
   },
-  eventspend_autocapture_dom_events: {
+  hogpost_autocapture_dom_events: {
     columns: ['dom_event', 'host', 'total'],
     results: [['click', 'app.acme.example', 600_000], ['change', 'app.acme.example', 200_000], ['click', 'www.acme.example', 600_000]],
   },
-  eventspend_autocapture_elements: {
+  hogpost_autocapture_elements: {
     columns: ['host', 'dom_event', 'tag', 'classes', 'text', 'total', 'sessions'],
     results: [['app.acme.example', 'click', 'button', '.grid-cell', '12', 300_000, 30_000], ['www.acme.example', 'click', 'a', '', 'Pricing', 100_000, 90_000]],
   },
-  eventspend_identity: {
+  hogpost_identity: {
     columns: ['event', 'lib', 'total', 'necessary'],
     results: [['$identify', 'posthog-node', 90_000, 10_000], ['$identify', 'web', 10_000, 9_000]],
   },
-  eventspend_bots: {
+  hogpost_bots: {
     columns: ['user_agent', 'lib', 'total', 'identified'],
     results: [['Mozilla/5.0 (compatible; AhrefsBot/7.0; +http://ahrefs.com/robot/)', 'posthog-node', 50_000, 50_000]],
   },
-  eventspend_server_events: {
+  hogpost_server_events: {
     columns: ['lib', 'event', 'total', 'identified'],
     results: [['posthog-node', 'api_request', 300_000, 250_000]],
   },
-  eventspend_flags_called: {
+  hogpost_flags_called: {
     columns: ['lib', 'locally_evaluated', 'total', 'flags'],
     results: [['posthog-node', 'false', 200_000, 4], ['web', null, 100_000, 3]],
   },
-  eventspend_replay_summary: {
+  hogpost_replay_summary: {
     columns: ['recordings', 'under_5s', 'under_10s', 'under_30s', 'under_60s', 'active_under_5s'],
     results: [[30_000, 9_000, 12_000, 18_000, 21_000, 15_000]],
   },
-  eventspend_replay_first_urls: {
+  hogpost_replay_first_urls: {
     columns: ['url', 'total', 'under_5s', 'single_url'],
     results: [['https://www.acme.example/', 15_000, 6_000, 10_000], ['https://app.acme.example/dashboard', 15_000, 3_000, 2_000]],
   },

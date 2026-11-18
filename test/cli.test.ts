@@ -10,7 +10,7 @@ import { PROJECT, fakePostHog } from './fake-posthog.js';
 import { NOW, noSleep } from './helpers.js';
 
 const KEY = 'phx_CLIKEY0123456789abcdefghijklmnopqrstuvw';
-const dir = mkdtempSync(join(tmpdir(), 'eventspend-test-'));
+const dir = mkdtempSync(join(tmpdir(), 'hogpost-test-'));
 
 function io(env: Record<string, string> = {}, fetchImpl?: typeof fetch) {
   const out: string[] = [];
@@ -56,7 +56,7 @@ describe('CLI end to end', () => {
     const t = io();
     expect(await main(['demo', '--json'], t.io)).toBe(0);
     const result = JSON.parse(t.out()) as AuditResult;
-    expect(result.schema).toBe('eventspend.report/v1');
+    expect(result.schema).toBe('hogpost.report/v1');
     expect(result.generatedAt).toBe(NOW.toISOString());
     expect(result.costs.totalUsd).toBeCloseTo(1568, 0);
     expect(result.fixes.length).toBeGreaterThan(10);
@@ -136,7 +136,7 @@ describe('CLI end to end', () => {
   it('runs live against a (fake) PostHog without ever exposing the key', async () => {
     const fake = fakePostHog();
     const snapPath = join(dir, 'live-snapshot.json');
-    const t = io({ EVENTSPEND_API_KEY: KEY }, fake.fetch);
+    const t = io({ HOGPOST_API_KEY: KEY }, fake.fetch);
     const code = await main(['--project', PROJECT, '--verbose', '--save-snapshot', snapPath, '--html', join(dir, 'live.html')], t.io);
     expect(t.err()).not.toContain(KEY);
     expect(code).toBe(0);
@@ -150,7 +150,7 @@ describe('CLI end to end', () => {
 
   it('redacts the key from API errors', async () => {
     const leaky = async () => new Response(JSON.stringify({ detail: `bad key ${KEY}` }), { status: 401 });
-    const t = io({ EVENTSPEND_API_KEY: KEY }, leaky as unknown as typeof fetch);
+    const t = io({ HOGPOST_API_KEY: KEY }, leaky as unknown as typeof fetch);
     expect(await main(['--project', PROJECT], t.io)).toBe(1);
     expect(t.err()).toMatch(/401/);
     expect(t.err()).not.toContain(KEY);
@@ -159,7 +159,7 @@ describe('CLI end to end', () => {
   it('explains how to provide the key and refuses it as an argument', async () => {
     const missing = io();
     expect(await main(['--project', '1'], missing.io)).toBe(2);
-    expect(missing.err()).toMatch(/EVENTSPEND_API_KEY/);
+    expect(missing.err()).toMatch(/HOGPOST_API_KEY/);
     const asArg = io();
     expect(await main(['--project', '1', '--api-key', KEY], asArg.io)).toBe(2);
     expect(asArg.err()).toMatch(/shell history/);
@@ -174,7 +174,7 @@ describe('CLI end to end', () => {
     expect(q.out()).toContain('INTERVAL 14 DAY');
     const h = io();
     expect(await main(['--help'], h.io)).toBe(0);
-    expect(h.out()).toContain('EVENTSPEND_API_KEY');
+    expect(h.out()).toContain('HOGPOST_API_KEY');
     expect(h.out()).toContain('not affiliated with or endorsed by PostHog Inc.');
     const v = io();
     expect(await main(['--version'], v.io)).toBe(0);
@@ -186,7 +186,7 @@ describe('CLI end to end', () => {
     expect(await main(['--from', join(dir, 'missing.json')], t.io)).toBe(2);
     expect(t.err()).toMatch(/Can't read --from file/);
     const bad = join(dir, 'bad.json');
-    writeFileSync(bad, '{"schema":"eventspend.snapshot/v1","period":{"days":-1}}');
+    writeFileSync(bad, '{"schema":"hogpost.snapshot/v1","period":{"days":-1}}');
     const v = io();
     expect(await main(['--from', bad], v.io)).toBe(1);
     expect(v.err()).toMatch(/period\.days/);

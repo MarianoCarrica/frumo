@@ -1,5 +1,5 @@
 /**
- * PostHog public usage pricing: the ONLY file in eventspend that contains prices.
+ * PostHog public usage pricing: the ONLY file in HogPost that contains prices.
  *
  * Source:    https://posthog.com/pricing  ("See all products and per-unit rates")
  * Retrieved: 2026-11-18
@@ -23,7 +23,7 @@
  *
  * If PostHog changes prices, update this file (and `retrieved`), or pass `--pricing <file>`.
  * Never guess a number: if a price can't be verified, set `tiers: null` and an `unverifiedReason`;
- * eventspend then reports volumes without a dollar figure for that product.
+ * HogPost then reports volumes without a dollar figure for that product.
  */
 import type { PricingTable } from './types.js';
 

@@ -32,7 +32,7 @@ export function normalizeHost(input: string, options: { allowHttp?: boolean } = 
   } catch {
     throw new UsageError(`--host "${raw}" is not a valid URL. Example: --host https://eu.posthog.com`);
   }
-  if (url.username || url.password) throw new UsageError('--host must not contain credentials. Put the key in EVENTSPEND_API_KEY.');
+  if (url.username || url.password) throw new UsageError('--host must not contain credentials. Put the key in HOGPOST_API_KEY.');
   if (url.search || url.hash) throw new UsageError('--host must not contain a query string or fragment.');
   if (url.pathname !== '/' && url.pathname !== '') {
     throw new UsageError(`--host should be just the origin (e.g. ${url.origin}), not a path like "${url.pathname}".`);

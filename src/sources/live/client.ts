@@ -24,7 +24,7 @@ export interface ClientOptions {
   log?: (line: string) => void;
   timeoutMs?: number;
   maxRetries?: number;
-  /** Longest Retry-After eventspend is willing to wait. */
+  /** Longest Retry-After HogPost is willing to wait. */
   maxRetryAfterSeconds?: number;
   /** Pause between consecutive requests. */
   minIntervalMs?: number;
@@ -71,8 +71,8 @@ export class PostHogReadOnlyClient {
     this.maxRetryAfterSeconds = options.maxRetryAfterSeconds ?? 60;
     this.minIntervalMs = options.minIntervalMs ?? 250;
     this.queryTimeoutMs = options.queryTimeoutMs ?? 120_000;
-    this.userAgent = `eventspend/${options.toolVersion} (read-only billing audit)`;
-    if (typeof this.fetchImpl !== 'function') throw new Error('global fetch is unavailable: eventspend needs Node.js 18 or newer.');
+    this.userAgent = `hogpost/${options.toolVersion} (read-only billing audit)`;
+    if (typeof this.fetchImpl !== 'function') throw new Error('global fetch is unavailable: HogPost needs Node.js 18 or newer.');
   }
 
   /** GET /api/... and parse JSON. */
@@ -98,7 +98,7 @@ export class PostHogReadOnlyClient {
 
   /** Runs one registered HogQL SELECT and returns rows as objects keyed by column name. */
   async hogql(projectId: string, query: HogQLQuery): Promise<Array<Record<string, unknown>>> {
-    if (!isIssuedQuery(query)) throw new ReadOnlyViolation('only queries built by eventspend/queries.ts may be sent');
+    if (!isIssuedQuery(query)) throw new ReadOnlyViolation('only the hard-coded queries in queries.ts may be sent');
     if (!/^\d+$/.test(projectId)) throw new ReadOnlyViolation(`invalid project id "${projectId}"`);
     const body = JSON.stringify({ query: { kind: 'HogQLQuery', query: query.sql }, name: query.name, refresh: 'blocking' });
     let response = await this.request('POST', this.url(`/api/projects/${projectId}/query/`), body, { scope: 'query:read' });
@@ -167,7 +167,7 @@ export class PostHogReadOnlyClient {
             hint = '';
           }
         }
-        throw new ApiError(`${label} was redirected; eventspend does not follow redirects so your key stays on the host you chose.${hint}`, {
+        throw new ApiError(`${label} was redirected; HogPost does not follow redirects so your key stays on the host you chose.${hint}`, {
           status: response.status,
           path: url.pathname,
         });
@@ -178,7 +178,7 @@ export class PostHogReadOnlyClient {
         if (attempt < this.maxRetries) {
           if (retryAfter !== null && retryAfter > this.maxRetryAfterSeconds) {
             throw new ApiError(
-              `${label}: PostHog rate limit (429). It asked to wait ${Math.ceil(retryAfter)}s, longer than eventspend waits (${this.maxRetryAfterSeconds}s). Try again later, or read less with --days 7.`,
+              `${label}: PostHog rate limit (429). It asked to wait ${Math.ceil(retryAfter)}s, longer than HogPost waits (${this.maxRetryAfterSeconds}s). Try again later, or read less with --days 7.`,
               { status: 429, path: url.pathname, code: 'rate_limited' },
             );
           }
@@ -216,7 +216,7 @@ export class PostHogReadOnlyClient {
     }
     detail = redact(detail, [this.apiKey]);
     let message = `${label} → ${status}${code ? ` ${code}` : ''}${detail ? `: ${detail}` : ''}`;
-    if (status === 401) message = `${label} → 401: PostHog rejected the API key in EVENTSPEND_API_KEY (invalid, revoked, or for another region/host).`;
+    if (status === 401) message = `${label} → 401: PostHog rejected the API key in HOGPOST_API_KEY (invalid, revoked, or for another region/host).`;
     else if (status === 403) message += options.scope ? ` (the key probably lacks the ${options.scope} scope, or access to this project)` : '';
     else if (status === 404) message += ' (not found: check --project and --host)';
     return new ApiError(redact(message, [this.apiKey]), { status, path, code });

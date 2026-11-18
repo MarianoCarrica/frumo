@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * eventspend CLI entry point. Unofficial; not affiliated with PostHog Inc.
+ * HogPost CLI entry point. Unofficial; not affiliated with PostHog Inc.
  * All work happens locally; in live mode the only network peer is the PostHog host you choose.
  */
 import { readFile, writeFile } from 'node:fs/promises';
@@ -70,7 +70,7 @@ export async function main(argv: readonly string[], io: CliIo): Promise<number> 
       const raw = io.env[API_KEY_ENV]?.trim();
       if (!raw) {
         throw new UsageError(
-          `Live mode needs a PostHog personal API key in ${API_KEY_ENV} (read-only scopes: query:read; recommended billing:read, project:read, feature_flag:read).\n  read -rs ${API_KEY_ENV} && export ${API_KEY_ENV}\nTry "eventspend demo" to see a report without an account.`,
+          `Live mode needs a PostHog personal API key in ${API_KEY_ENV} (read-only scopes: query:read; recommended billing:read, project:read, feature_flag:read).\n  read -rs ${API_KEY_ENV} && export ${API_KEY_ENV}\nTry "hogpost demo" to see a report without an account.`,
         );
       }
       apiKey = new Secret(raw);
@@ -133,14 +133,14 @@ export async function main(argv: readonly string[], io: CliIo): Promise<number> 
   } catch (error) {
     const message = redact(error instanceof Error ? error.message : String(error), secrets());
     if (error instanceof UsageError) {
-      io.stderr(`eventspend: ${message}\n`);
+      io.stderr(`hogpost: ${message}\n`);
       return 2;
     }
     if (error instanceof ApiError || error instanceof ValidationError) {
-      io.stderr(`eventspend: ${message}\n`);
+      io.stderr(`hogpost: ${message}\n`);
       return 1;
     }
-    io.stderr(`eventspend: unexpected error: ${message}\n`);
+    io.stderr(`hogpost: unexpected error: ${message}\n`);
     if (args?.verbose && error instanceof Error && error.stack) io.stderr(`${redact(error.stack, secrets())}\n`);
     return 1;
   }
@@ -164,7 +164,7 @@ async function loadPricing(path: string): Promise<PricingOverride> {
 
 function printQueries(days: number): string {
   const lines = [
-    `-- Every HogQL query eventspend runs in live mode (window: last ${days} days).`,
+    `-- Every HogQL query HogPost runs in live mode (window: last ${days} days).`,
     '-- All are read-only SELECTs sent to POST /api/projects/:id/query/ (scope query:read).',
     '-- Paste any of them into PostHog\'s SQL editor to check them yourself.',
     '',
@@ -197,7 +197,7 @@ if (isEntryPoint()) {
       process.exitCode = code;
     },
     (error: unknown) => {
-      process.stderr.write(`eventspend: ${redact(error instanceof Error ? error.message : String(error))}\n`);
+      process.stderr.write(`hogpost: ${redact(error instanceof Error ? error.message : String(error))}\n`);
       process.exitCode = 1;
     },
   );

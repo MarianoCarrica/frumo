@@ -124,7 +124,7 @@ export function ingestionHost(appHost: string | null): string {
 
 /**
  * One reviewable diff with every posthog.init change, in ranked order. Only additions are shown
- * because eventspend can't see your current config; each line says why and what it saves.
+ * because HogPost can't see your current config; each line says why and what it saves.
  */
 export function buildInitDiff(fixes: readonly FixResult[], ctx: AnalysisContext): string | null {
   const chosen: Array<{ option: InitOption; fix: FixResult }> = [];
@@ -149,7 +149,7 @@ export function buildInitDiff(fixes: readonly FixResult[], ctx: AnalysisContext)
   const lines: string[] = [];
   lines.push(" import posthog from 'posthog-js'", ' ');
   if (preamble.length > 0) {
-    lines.push('+// Added by eventspend: review each line before shipping');
+    lines.push('+// Added by HogPost: review each line before shipping');
     for (const p of preamble) for (const l of p.split('\n')) lines.push(`+${l}`);
     lines.push(' ');
   }

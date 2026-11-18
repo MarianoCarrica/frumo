@@ -19,7 +19,7 @@ describe('snapshot format', () => {
     expect(parsed.source.kind).toBe('file');
   });
 
-  it('rejects files that are not eventspend snapshots', () => {
+  it('rejects files that are not HogPost snapshots', () => {
     expect(() => parseSnapshot({ hello: 'world' })).toThrow(/schema/);
     expect(() => parseSnapshot([])).toThrow(ValidationError);
   });

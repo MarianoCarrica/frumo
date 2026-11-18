@@ -120,8 +120,8 @@ export interface Finding {
 }
 
 export interface AuditResult {
-  schema: 'eventspend.report/v1';
-  tool: { name: 'eventspend'; version: string };
+  schema: 'hogpost.report/v1';
+  tool: { name: 'hogpost'; version: string };
   generatedAt: string;
   input: {
     sourceKind: SourceKind;

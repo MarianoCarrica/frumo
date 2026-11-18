@@ -40,7 +40,7 @@ describe('read-only client', () => {
     expect(call.headers.authorization).toBe(`Bearer ${KEY}`);
     expect(call.redirect).toBe('manual');
     expect(call.url.toString()).not.toContain(KEY);
-    expect(call.headers['user-agent']).toMatch(/^eventspend\/test/);
+    expect(call.headers['user-agent']).toMatch(/^hogpost\/test/);
   });
 
   it('posts only registered HogQL SELECTs to the query endpoint', async () => {
@@ -53,7 +53,7 @@ describe('read-only client', () => {
     const body = JSON.parse(call.body ?? '{}') as { query: { kind: string; query: string }; name: string };
     expect(body.query.kind).toBe('HogQLQuery');
     expect(body.query.query).toBe(query().sql);
-    expect(body.name).toBe('eventspend_totals');
+    expect(body.name).toBe('hogpost_totals');
   });
 
   it('refuses forged queries, other methods, other paths and other hosts before any request', async () => {

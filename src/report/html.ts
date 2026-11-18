@@ -279,7 +279,7 @@ export function renderHtml(result: AuditResult): string {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<title>eventspend · ${e(title)}</title>
+<title>HogPost · ${e(title)}</title>
 <style>${CSS}</style>
 </head>
 <body>
@@ -293,7 +293,7 @@ export function renderHtml(result: AuditResult): string {
     <dt>Period</dt><dd>Last ${e(i.periodDays)} days, normalized to a 30-day month</dd>
     <dt>Scope</dt><dd>${i.scope === 'organization' ? `Organization usage across ${e(Math.max(1, i.projects.length))} project(s); usage and free allowances are shared` : 'This project only (no organization usage in the data)'}</dd>
     <dt>Pricing</dt><dd>${e(result.pricing.table.name)}, ${e(result.pricing.table.retrieved)} · ${link(result.pricing.table.source, result.pricing.table.source)}</dd>
-    <dt>Generated</dt><dd>${e(result.generatedAt)} by eventspend ${e(result.tool.version)}</dd>
+    <dt>Generated</dt><dd>${e(result.generatedAt)} by HogPost ${e(result.tool.version)}</dd>
   </dl>
 </header>
 
@@ -317,7 +317,7 @@ export function renderHtml(result: AuditResult): string {
 <p class="sub">Each saving assumes only that fix is applied. No-regret fixes remove data you almost certainly don't use; trade-offs give something up, listed under “You lose”.</p>
 ${result.fixes.map(fixCard).join('') || '<p class="muted">No fixes found for the data available.</p>'}
 
-${result.initDiff ? `<h2>All posthog.init changes in one diff</h2><p class="sub">Additions only, because eventspend can't see your current config. Review every line; “Copy code” strips the diff markers.</p>${codeBlock('posthog.init', result.initDiff, 'diff', true)}` : ''}
+${result.initDiff ? `<h2>All posthog.init changes in one diff</h2><p class="sub">Additions only, because HogPost can't see your current config. Review every line; “Copy code” strips the diff markers.</p>${codeBlock('posthog.init', result.initDiff, 'diff', true)}` : ''}
 
 ${limitsRows ? `<h2>Billing limits</h2><p class="sub">Set per product in your organization's billing settings. When a product hits its limit, PostHog stops ingesting that data for the rest of the billing period (it is lost); the organization owner gets emails at 80% and 100%.</p><div class="card table-wrap"><table><thead><tr><th>Product</th><th class="n">Now</th><th class="n">After no-regret</th><th class="n">Current limit</th><th class="n">Suggested</th><th>Why</th></tr></thead><tbody>${limitsRows}</tbody></table></div>` : ''}
 
@@ -337,7 +337,7 @@ ${result.pricing.table.notes.length > 0 ? `<ul class="list small">${result.prici
 
 <footer>
   <p>${e(result.disclaimer)}</p>
-  <p>Generated locally by eventspend ${e(result.tool.version)} (MIT licensed). This file loads nothing from the network.</p>
+  <p>Generated locally by HogPost ${e(result.tool.version)} (MIT licensed). This file loads nothing from the network.</p>
 </footer>
 </div></main>
 <script>${SCRIPT}</script>

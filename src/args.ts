@@ -29,23 +29,23 @@ export interface CliArgs {
   planPricing: boolean;
 }
 
-export const API_KEY_ENV = 'EVENTSPEND_API_KEY';
+export const API_KEY_ENV = 'HOGPOST_API_KEY';
 
 const KEY_FLAG = /^--?(api[-_]?key|personal[-_]?api[-_]?key|key|token|secret|apikey|auth)(=.*)?$/i;
 
 const KEY_ADVICE = `Don't pass API keys as command-line arguments: they end up in your shell history and process list. Put the key in the ${API_KEY_ENV} environment variable instead, e.g.\n  read -rs ${API_KEY_ENV} && export ${API_KEY_ENV}`;
 
-export const HELP = `eventspend: find what drives your PostHog bill and get ready-to-paste fixes with $ estimates.
+export const HELP = `HogPost: find what drives your PostHog bill and get ready-to-paste fixes with $ estimates.
 Unofficial; not affiliated with or endorsed by PostHog Inc. Read-only; runs on your machine.
 
 Usage
-  eventspend demo                              Run on bundled fictional data (no account needed)
-  eventspend --project <id> [--host <url>]     Live, read-only audit (key in ${API_KEY_ENV})
-  eventspend --from <snapshot.json|counts.csv> Offline audit from a saved snapshot or event-count CSV
-  eventspend --print-queries                   Show every HogQL query eventspend can run, then exit
+  hogpost demo                              Run on bundled fictional data (no account needed)
+  hogpost --project <id> [--host <url>]     Live, read-only audit (key in ${API_KEY_ENV})
+  hogpost --from <snapshot.json|counts.csv> Offline audit from a saved snapshot or event-count CSV
+  hogpost --print-queries                   Show every HogQL query HogPost can run, then exit
 
 Live mode
-  ${API_KEY_ENV}       Personal API key (env var only; never pass it as an argument)
+  ${API_KEY_ENV.padEnd(27)}Personal API key (env var only; never pass it as an argument)
   --project <id>             Numeric project ID (Project settings → Project ID)
   --host <url>               ${DEFAULT_HOST} (default), https://eu.posthog.com, or your self-hosted URL
   --days <n>                 Window to read, 1-${MAX_DAYS} days (default 30); results are scaled to 30 days
@@ -74,9 +74,9 @@ Estimates
   -v, --version              Show the version
 
 Examples
-  npx eventspend demo --html demo-report.html
-  ${API_KEY_ENV}=… npx eventspend --project 12345 --host https://eu.posthog.com --html report.html
-  npx eventspend --from snapshot.json --json > report.json
+  npx hogpost demo --html demo-report.html
+  ${API_KEY_ENV}=… npx hogpost --project 12345 --host https://eu.posthog.com --html report.html
+  npx hogpost --from snapshot.json --json > report.json
 `;
 
 function compile(patterns: string[] | undefined, flag: string): RegExp[] {
@@ -107,7 +107,7 @@ export function parseCliArgs(argv: readonly string[]): CliArgs {
     parsed = parse(argv);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new UsageError(`${message.replace(/\. To specify a positional argument.*$/s, '.')}\nRun "eventspend --help" for the options.`);
+    throw new UsageError(`${message.replace(/\. To specify a positional argument.*$/s, '.')}\nRun "hogpost --help" for the options.`);
   }
   const { values, positionals } = parsed;
 
@@ -124,7 +124,7 @@ export function parseCliArgs(argv: readonly string[]): CliArgs {
   else if (values.demo || command === 'demo') mode = 'demo';
   else if (values.from !== undefined) mode = 'file';
   else if (values.project !== undefined) mode = 'live';
-  else throw new UsageError('Nothing to audit. Use "eventspend demo", "--project <id>" (live) or "--from <file>".\nRun "eventspend --help" for details.');
+  else throw new UsageError('Nothing to audit. Use "hogpost demo", "--project <id>" (live) or "--from <file>".\nRun "hogpost --help" for details.');
 
   const sources = [mode === 'demo', values.from !== undefined, values.project !== undefined].filter(Boolean).length;
   if (mode !== 'help' && mode !== 'version' && mode !== 'print-queries' && sources > 1) {

@@ -116,7 +116,7 @@ function parseProductOverride(value: unknown, path: string, issues: Issues): Pro
 }
 
 /**
- * Accepts eventspend's shape ({ upTo, unitUsd, flatUsd? }) and PostHog's billing API shape
+ * Accepts HogPost's shape ({ upTo, unitUsd, flatUsd? }) and PostHog's billing API shape
  * ({ up_to, unit_amount_usd: "0.00005", flat_amount_usd: "0" }).
  */
 export function parseTier(raw: unknown, path: string, issues: Issues): PriceTier | null {

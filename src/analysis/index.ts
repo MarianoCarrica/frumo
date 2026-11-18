@@ -39,7 +39,7 @@ export const ANALYZERS: ReadonlyArray<(ctx: AnalysisContext) => AnalyzerOutput> 
 ];
 
 export const DISCLAIMER =
-  'Estimates only. eventspend is unofficial and not affiliated with or endorsed by PostHog Inc. Dollar figures apply the price list shown above to the usage in your data, normalized to a 30-day month; your invoice can differ (discounts, credits, annual plans, billing-period timing, products not estimated here). Review every change before shipping it.';
+  'Estimates only. HogPost is unofficial and not affiliated with or endorsed by PostHog Inc. Dollar figures apply the price list shown above to the usage in your data, normalized to a 30-day month; your invoice can differ (discounts, credits, annual plans, billing-period timing, products not estimated here). Review every change before shipping it.';
 
 const MAX_DRIVERS = 12;
 
@@ -100,8 +100,8 @@ export function runAnalysis(snap: Snapshot, options: AnalysisOptions): AuditResu
   }
 
   return {
-    schema: 'eventspend.report/v1',
-    tool: { name: 'eventspend', version: options.toolVersion },
+    schema: 'hogpost.report/v1',
+    tool: { name: 'hogpost', version: options.toolVersion },
     generatedAt: (options.now ?? new Date()).toISOString(),
     input: {
       sourceKind: snap.source.kind,

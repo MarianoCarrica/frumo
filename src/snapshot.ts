@@ -1,5 +1,5 @@
 /**
- * The eventspend snapshot: everything the audit needs, in one JSON document.
+ * The HogPost snapshot: everything the audit needs, in one JSON document.
  *
  * Live mode collects exactly this shape (and can save it with --save-snapshot); offline mode
  * reads it back with --from. All counts cover the window in `period.days` (they are normalized
@@ -14,7 +14,7 @@ import { PRODUCT_KEYS, isProductKey } from './pricing/types.js';
 import type { ProductKey } from './pricing/types.js';
 import { Issues } from './util/validate.js';
 
-export const SNAPSHOT_SCHEMA = 'eventspend.snapshot/v1';
+export const SNAPSHOT_SCHEMA = 'hogpost.snapshot/v1';
 
 /** Usage meters PostHog bills on (organization-wide). */
 export const USAGE_KEYS = [
@@ -244,7 +244,7 @@ export function parseSnapshot(json: unknown, what = 'Snapshot'): Snapshot {
   const r = root as Record<string, unknown>;
 
   if (r.schema !== SNAPSHOT_SCHEMA) {
-    v.add('schema', `expected "${SNAPSHOT_SCHEMA}" (is this an eventspend snapshot? CSV files need a .csv extension)`);
+    v.add('schema', `expected "${SNAPSHOT_SCHEMA}" (is this an HogPost snapshot? CSV files need a .csv extension)`);
     v.throwIfAny(what);
   }
 

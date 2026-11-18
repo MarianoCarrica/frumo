@@ -42,7 +42,7 @@ export interface CollectOptions {
   progress?: (line: string) => void;
 }
 
-/** Billing usage types → eventspend meters. Order matters: the billable mobile count wins over the raw one. */
+/** Billing usage types → HogPost meters. Order matters: the billable mobile count wins over the raw one. */
 const USAGE_TYPE_TO_KEY: ReadonlyArray<[string, UsageKey]> = [
   ['event_count_in_period', 'events'],
   ['enhanced_persons_event_count_in_period', 'identifiedEvents'],
@@ -54,7 +54,7 @@ const USAGE_TYPE_TO_KEY: ReadonlyArray<[string, UsageKey]> = [
   ['exceptions_captured_in_period', 'exceptions'],
 ];
 
-/** PostHog billing product types → eventspend price lists. */
+/** PostHog billing product types → HogPost price lists. */
 const BILLING_TYPE_TO_PRODUCT: Record<string, ProductKey> = {
   product_analytics: 'product_analytics',
   enhanced_persons: 'identified_events',
