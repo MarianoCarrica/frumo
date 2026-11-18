@@ -70,6 +70,7 @@ The demo data is a **fictional** company ("Tidebrook", hosts under the reserved 
 - [CLI reference](#cli-reference)
 - [Development](#development)
 - [Disclaimer and licence](#disclaimer-and-licence)
+- [Working on this repo](#working-on-this-repo)
 
 ## Quick start
 
@@ -373,3 +374,7 @@ TypeScript is pinned to 6.0.x because typescript-eslint supports TypeScript belo
 HogPost is unofficial and not affiliated with, endorsed by or sponsored by PostHog Inc. PostHog is a trademark of PostHog Inc. and is used here only to describe compatibility. Estimates are provided as-is and can differ from your invoice; review every change before shipping it.
 
 [MIT](LICENSE) © 2026 Mariano Ventures
+
+## Working on this repo
+
+Read [AGENTS.md](AGENTS.md) before making changes. Pull requests must pass the CI checks: `lint`, `typecheck` and `test`.

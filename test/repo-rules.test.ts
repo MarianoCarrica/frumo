@@ -104,6 +104,9 @@ describe('repository rules', () => {
     expect(readme.includes(usage), 'Regenerate the README "CLI reference" block from `hogpost --help`').toBe(true);
     expect(readme).toContain('Unofficial. Not affiliated with or endorsed by PostHog Inc. Works with PostHog Cloud (US/EU) and self-hosted PostHog.');
     expect(readme).toContain(`retrieved ${PUBLIC_PRICING.retrieved}`);
+    const workingOnThisRepo =
+      '## Working on this repo\n\nRead [AGENTS.md](AGENTS.md) before making changes. Pull requests must pass the CI checks: `lint`, `typecheck` and `test`.';
+    expect(readme.trimEnd().endsWith(workingOnThisRepo), 'README.md must end with the upstream "Working on this repo" section, verbatim').toBe(true);
     for (const key of PRODUCT_KEYS) {
       for (const tier of PUBLIC_PRICING.products[key].tiers ?? []) {
         if (tier.unitUsd > 0) {
