@@ -173,6 +173,24 @@ function printQueries(days: number): string {
   return `${lines.join('\n')}`;
 }
 
+interface ErrorEmitter {
+  on(event: 'error', listener: (error: unknown) => void): unknown;
+}
+
+/**
+ * Stops quietly when the reader closes the pipe early (e.g. `hogpost demo | head`) instead of
+ * crashing with an unhandled EPIPE error. Any other stream error still surfaces.
+ */
+export function exitOnBrokenPipe(stream: ErrorEmitter, exit: (code: number) => void): void {
+  stream.on('error', (error: unknown) => {
+    if (typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'EPIPE') {
+      exit(0);
+      return;
+    }
+    throw error;
+  });
+}
+
 /** True when this module is the process entry point (also through the npm bin symlink). */
 function isEntryPoint(): boolean {
   const entry = process.argv[1];
@@ -185,6 +203,8 @@ function isEntryPoint(): boolean {
 }
 
 if (isEntryPoint()) {
+  exitOnBrokenPipe(process.stdout, (code) => process.exit(code));
+  exitOnBrokenPipe(process.stderr, (code) => process.exit(code));
   const io: CliIo = {
     stdout: (text) => process.stdout.write(text),
     stderr: (text) => process.stderr.write(text),

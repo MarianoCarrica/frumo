@@ -1,8 +1,9 @@
+import { EventEmitter } from 'node:events';
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { main } from '../src/cli.js';
+import { exitOnBrokenPipe, main } from '../src/cli.js';
 import type { CliIo } from '../src/cli.js';
 import type { AuditResult } from '../src/analysis/model.js';
 import { SNAPSHOT_SCHEMA } from '../src/snapshot.js';
@@ -190,5 +191,16 @@ describe('CLI end to end', () => {
     const v = io();
     expect(await main(['--from', bad], v.io)).toBe(1);
     expect(v.err()).toMatch(/period\.days/);
+  });
+});
+
+describe('piping output', () => {
+  it('exits quietly when the reader closes the pipe (hogpost demo | head) and rethrows other errors', () => {
+    const stream = new EventEmitter();
+    const codes: number[] = [];
+    exitOnBrokenPipe(stream, (code) => codes.push(code));
+    stream.emit('error', Object.assign(new Error('write EPIPE'), { code: 'EPIPE' }));
+    expect(codes).toEqual([0]);
+    expect(() => stream.emit('error', Object.assign(new Error('disk on fire'), { code: 'EIO' }))).toThrow('disk on fire');
   });
 });
