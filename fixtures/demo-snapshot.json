@@ -1,0 +1,1072 @@
+{
+  "schema": "eventspend.snapshot/v1",
+  "generatedAt": "2026-11-18T09:00:00.000Z",
+  "source": {
+    "kind": "demo",
+    "host": null,
+    "toolVersion": "0.1.0",
+    "fictional": true,
+    "label": "Tidebrook (fictional B2B SaaS)"
+  },
+  "project": {
+    "id": "21345",
+    "name": "Tidebrook (production)"
+  },
+  "period": {
+    "days": 30,
+    "start": "2026-10-19T09:00:00.000Z",
+    "end": "2026-11-18T09:00:00.000Z"
+  },
+  "orgUsage": [
+    {
+      "projectId": "21345",
+      "name": "Tidebrook (production)",
+      "audited": true,
+      "usage": {
+        "events": 7959000,
+        "identifiedEvents": 6640580,
+        "recordings": 64200,
+        "mobileRecordings": 0,
+        "flagRequests": 9870000,
+        "surveyResponses": 880,
+        "exceptions": 44000
+      }
+    },
+    {
+      "projectId": "21346",
+      "name": "Tidebrook (staging)",
+      "audited": false,
+      "usage": {
+        "events": 1060000,
+        "identifiedEvents": 640000,
+        "recordings": 8400,
+        "mobileRecordings": 0,
+        "flagRequests": 1450000,
+        "surveyResponses": 0,
+        "exceptions": 12000
+      }
+    }
+  ],
+  "projectSettings": {
+    "autocaptureOptOut": false,
+    "sessionRecordingOptIn": true,
+    "sessionRecordingSampleRate": null,
+    "sessionRecordingMinimumDurationMs": null,
+    "sessionRecordingUrlTriggerCount": 0,
+    "sessionRecordingTriggerGroupCount": 0,
+    "heatmapsOptIn": false,
+    "captureDeadClicks": true
+  },
+  "events": {
+    "totals": {
+      "all": 8697880,
+      "billable": 7959000,
+      "billableIdentified": 6640580,
+      "unidentifiedPersonEvents": 1132897
+    },
+    "byEvent": [
+      {
+        "event": "$autocapture",
+        "count": 3175200,
+        "identified": 2537120
+      },
+      {
+        "event": "$pageview",
+        "count": 1247400,
+        "identified": 913010
+      },
+      {
+        "event": "$pageleave",
+        "count": 920200,
+        "identified": 648830
+      },
+      {
+        "event": "api_request",
+        "count": 720000,
+        "identified": 720000
+      },
+      {
+        "event": "$feature_flag_called",
+        "count": 673000,
+        "identified": 670560
+      },
+      {
+        "event": "$identify",
+        "count": 298200,
+        "identified": 282620
+      },
+      {
+        "event": "dashboard_viewed",
+        "count": 263000,
+        "identified": 258040
+      },
+      {
+        "event": "$set",
+        "count": 214000,
+        "identified": 214000
+      },
+      {
+        "event": "sync_job_completed",
+        "count": 182000,
+        "identified": 182000
+      },
+      {
+        "event": "report_viewed",
+        "count": 179000,
+        "identified": 177210
+      },
+      {
+        "event": "feature_used",
+        "count": 158000,
+        "identified": 154840
+      },
+      {
+        "event": "search_performed",
+        "count": 96000,
+        "identified": 94080
+      },
+      {
+        "event": "$web_vitals",
+        "count": 94000,
+        "identified": 65620
+      },
+      {
+        "event": "$groupidentify",
+        "count": 92000,
+        "identified": 90160
+      },
+      {
+        "event": "filter_applied",
+        "count": 71000,
+        "identified": 70290
+      },
+      {
+        "event": "report_exported",
+        "count": 61000,
+        "identified": 61000
+      },
+      {
+        "event": "webhook_received",
+        "count": 54000,
+        "identified": 54000
+      },
+      {
+        "event": "$dead_click",
+        "count": 48000,
+        "identified": 34580
+      },
+      {
+        "event": "$exception",
+        "count": 44000,
+        "identified": 43120
+      },
+      {
+        "event": "comment_added",
+        "count": 39000,
+        "identified": 39000
+      },
+      {
+        "event": "onboarding_step_completed",
+        "count": 26000,
+        "identified": 26000
+      },
+      {
+        "event": "survey shown",
+        "count": 21000,
+        "identified": 20580
+      },
+      {
+        "event": "$rageclick",
+        "count": 15000,
+        "identified": 12180
+      },
+      {
+        "event": "signup_completed",
+        "count": 3900,
+        "identified": 3900
+      },
+      {
+        "event": "invoice_paid",
+        "count": 2100,
+        "identified": 2100
+      },
+      {
+        "event": "survey sent",
+        "count": 880,
+        "identified": 862
+      }
+    ],
+    "byLib": [
+      {
+        "lib": "web",
+        "count": 6496900,
+        "identified": 5178480
+      },
+      {
+        "lib": "posthog-node",
+        "count": 1226100,
+        "identified": 1226100
+      },
+      {
+        "lib": "posthog-python",
+        "count": 236000,
+        "identified": 236000
+      }
+    ],
+    "byHost": [
+      {
+        "host": "app.tidebrook.example",
+        "count": 3753900,
+        "identified": 3653060
+      },
+      {
+        "host": "www.tidebrook.example",
+        "count": 2270000,
+        "identified": 1314170
+      },
+      {
+        "host": "docs.tidebrook.example",
+        "count": 349000,
+        "identified": 87250
+      },
+      {
+        "host": "staging.tidebrook.example",
+        "count": 121000,
+        "identified": 121000
+      },
+      {
+        "host": "localhost:3000",
+        "count": 56000,
+        "identified": 56000
+      },
+      {
+        "host": "tidebrook-git-feat-new-billing-tidebrook.vercel.app",
+        "count": 26000,
+        "identified": 26000
+      }
+    ],
+    "byPage": [
+      {
+        "host": "app.tidebrook.example",
+        "path": "/dashboard",
+        "count": 2183400,
+        "identified": 2141460,
+        "unidentifiedPersonEvents": 0,
+        "pageviews": 257200,
+        "pageleaves": 224200,
+        "autocapture": 1050000
+      },
+      {
+        "host": "www.tidebrook.example",
+        "path": "/",
+        "count": 1382000,
+        "identified": 779200,
+        "unidentifiedPersonEvents": 713496,
+        "pageviews": 274000,
+        "pageleaves": 218000,
+        "autocapture": 820000
+      },
+      {
+        "host": "app.tidebrook.example",
+        "path": "/inbox",
+        "count": 444000,
+        "identified": 444000,
+        "unidentifiedPersonEvents": 0,
+        "pageviews": 61000,
+        "pageleaves": 52000,
+        "autocapture": 228000
+      },
+      {
+        "host": "www.tidebrook.example",
+        "path": "/pricing",
+        "count": 389000,
+        "identified": 237800,
+        "unidentifiedPersonEvents": 187920,
+        "pageviews": 120000,
+        "pageleaves": 77000,
+        "autocapture": 171000
+      },
+      {
+        "host": "app.tidebrook.example",
+        "path": "/reports/8812",
+        "count": 376000,
+        "identified": 372240,
+        "unidentifiedPersonEvents": 0,
+        "pageviews": 41000,
+        "pageleaves": 35000,
+        "autocapture": 166000
+      },
+      {
+        "host": "app.tidebrook.example",
+        "path": "/login",
+        "count": 265600,
+        "identified": 213920,
+        "unidentifiedPersonEvents": 0,
+        "pageviews": 81200,
+        "pageleaves": 6000,
+        "autocapture": 94200
+      },
+      {
+        "host": "app.tidebrook.example",
+        "path": "/reports/9031",
+        "count": 214000,
+        "identified": 211860,
+        "unidentifiedPersonEvents": 0,
+        "pageviews": 24000,
+        "pageleaves": 20000,
+        "autocapture": 97000
+      },
+      {
+        "host": "www.tidebrook.example",
+        "path": "/blog/how-we-cut-churn-in-half",
+        "count": 180000,
+        "identified": 111840,
+        "unidentifiedPersonEvents": 70148,
+        "pageviews": 90000,
+        "pageleaves": 44000,
+        "autocapture": 38000
+      },
+      {
+        "host": "docs.tidebrook.example",
+        "path": "/getting-started",
+        "count": 146000,
+        "identified": 32120,
+        "unidentifiedPersonEvents": 0,
+        "pageviews": 46000,
+        "pageleaves": 39000,
+        "autocapture": 61000
+      },
+      {
+        "host": "docs.tidebrook.example",
+        "path": "/api/reference",
+        "count": 143000,
+        "identified": 44330,
+        "unidentifiedPersonEvents": 0,
+        "pageviews": 52000,
+        "pageleaves": 44000,
+        "autocapture": 47000
+      },
+      {
+        "host": "app.tidebrook.example",
+        "path": "/reports/7744",
+        "count": 132000,
+        "identified": 130680,
+        "unidentifiedPersonEvents": 0,
+        "pageviews": 15000,
+        "pageleaves": 13000,
+        "autocapture": 61000
+      },
+      {
+        "host": "staging.tidebrook.example",
+        "path": "/dashboard",
+        "count": 121000,
+        "identified": 121000,
+        "unidentifiedPersonEvents": 0,
+        "pageviews": 21000,
+        "pageleaves": 17000,
+        "autocapture": 74000
+      },
+      {
+        "host": "www.tidebrook.example",
+        "path": "/blog/q3-product-update",
+        "count": 79000,
+        "identified": 47400,
+        "unidentifiedPersonEvents": 41712,
+        "pageviews": 31000,
+        "pageleaves": 27000,
+        "autocapture": 21000
+      },
+      {
+        "host": "www.tidebrook.example",
+        "path": "/blog",
+        "count": 77000,
+        "identified": 42350,
+        "unidentifiedPersonEvents": 39809,
+        "pageviews": 24000,
+        "pageleaves": 20000,
+        "autocapture": 33000
+      },
+      {
+        "host": "app.tidebrook.example",
+        "path": "/onboarding",
+        "count": 75900,
+        "identified": 75900,
+        "unidentifiedPersonEvents": 0,
+        "pageviews": 9000,
+        "pageleaves": 0,
+        "autocapture": 37000
+      },
+      {
+        "host": "app.tidebrook.example",
+        "path": "/settings/billing",
+        "count": 63000,
+        "identified": 63000,
+        "unidentifiedPersonEvents": 0,
+        "pageviews": 12000,
+        "pageleaves": 10000,
+        "autocapture": 41000
+      },
+      {
+        "host": "docs.tidebrook.example",
+        "path": "/",
+        "count": 60000,
+        "identified": 10800,
+        "unidentifiedPersonEvents": 0,
+        "pageviews": 23000,
+        "pageleaves": 19000,
+        "autocapture": 18000
+      },
+      {
+        "host": "www.tidebrook.example",
+        "path": "/customers",
+        "count": 59000,
+        "identified": 33630,
+        "unidentifiedPersonEvents": 30939,
+        "pageviews": 18000,
+        "pageleaves": 15000,
+        "autocapture": 26000
+      },
+      {
+        "host": "localhost:3000",
+        "path": "/dashboard",
+        "count": 56000,
+        "identified": 56000,
+        "unidentifiedPersonEvents": 0,
+        "pageviews": 7000,
+        "pageleaves": 5000,
+        "autocapture": 38000
+      },
+      {
+        "host": "www.tidebrook.example",
+        "path": "/changelog",
+        "count": 42000,
+        "identified": 29400,
+        "unidentifiedPersonEvents": 17640,
+        "pageviews": 16000,
+        "pageleaves": 14000,
+        "autocapture": 12000
+      },
+      {
+        "host": "www.tidebrook.example",
+        "path": "/careers",
+        "count": 31000,
+        "identified": 15500,
+        "unidentifiedPersonEvents": 15035,
+        "pageviews": 12000,
+        "pageleaves": 10000,
+        "autocapture": 9000
+      },
+      {
+        "host": "www.tidebrook.example",
+        "path": "/compare/acme-analytics",
+        "count": 31000,
+        "identified": 17050,
+        "unidentifiedPersonEvents": 16198,
+        "pageviews": 9000,
+        "pageleaves": 8000,
+        "autocapture": 14000
+      },
+      {
+        "host": "tidebrook-git-feat-new-billing-tidebrook.vercel.app",
+        "path": "/settings/billing",
+        "count": 26000,
+        "identified": 26000,
+        "unidentifiedPersonEvents": 0,
+        "pageviews": 4000,
+        "pageleaves": 3000,
+        "autocapture": 19000
+      }
+    ],
+    "autocaptureDomEvents": [
+      {
+        "domEvent": "click",
+        "host": "app.tidebrook.example",
+        "count": 1428000
+      },
+      {
+        "domEvent": "click",
+        "host": "www.tidebrook.example",
+        "count": 1109680
+      },
+      {
+        "domEvent": "change",
+        "host": "app.tidebrook.example",
+        "count": 294270
+      },
+      {
+        "domEvent": "click",
+        "host": "docs.tidebrook.example",
+        "count": 124740
+      },
+      {
+        "domEvent": "click",
+        "host": "staging.tidebrook.example",
+        "count": 59200
+      },
+      {
+        "domEvent": "submit",
+        "host": "app.tidebrook.example",
+        "count": 51930
+      },
+      {
+        "domEvent": "click",
+        "host": "localhost:3000",
+        "count": 30400
+      },
+      {
+        "domEvent": "submit",
+        "host": "www.tidebrook.example",
+        "count": 22880
+      },
+      {
+        "domEvent": "click",
+        "host": "tidebrook-git-feat-new-billing-tidebrook.vercel.app",
+        "count": 15200
+      },
+      {
+        "domEvent": "change",
+        "host": "staging.tidebrook.example",
+        "count": 12580
+      },
+      {
+        "domEvent": "change",
+        "host": "www.tidebrook.example",
+        "count": 11440
+      },
+      {
+        "domEvent": "change",
+        "host": "localhost:3000",
+        "count": 6460
+      },
+      {
+        "domEvent": "change",
+        "host": "tidebrook-git-feat-new-billing-tidebrook.vercel.app",
+        "count": 3230
+      },
+      {
+        "domEvent": "submit",
+        "host": "staging.tidebrook.example",
+        "count": 2220
+      },
+      {
+        "domEvent": "change",
+        "host": "docs.tidebrook.example",
+        "count": 1260
+      },
+      {
+        "domEvent": "submit",
+        "host": "localhost:3000",
+        "count": 1140
+      },
+      {
+        "domEvent": "submit",
+        "host": "tidebrook-git-feat-new-billing-tidebrook.vercel.app",
+        "count": 570
+      }
+    ],
+    "autocaptureElements": [
+      {
+        "host": "www.tidebrook.example",
+        "domEvent": "click",
+        "tag": "button",
+        "classes": ".hero-carousel__next",
+        "text": "Next",
+        "count": 540000,
+        "sessions": 61000
+      },
+      {
+        "host": "app.tidebrook.example",
+        "domEvent": "click",
+        "tag": "button",
+        "classes": ".grid-cell",
+        "text": "$12,400",
+        "count": 640000,
+        "sessions": 52000
+      },
+      {
+        "host": "app.tidebrook.example",
+        "domEvent": "click",
+        "tag": "button",
+        "classes": ".tab-trigger",
+        "text": "Overview",
+        "count": 146000,
+        "sessions": 33000
+      },
+      {
+        "host": "app.tidebrook.example",
+        "domEvent": "click",
+        "tag": "a",
+        "classes": ".sidebar-link",
+        "text": "Reports",
+        "count": 121000,
+        "sessions": 48000
+      },
+      {
+        "host": "app.tidebrook.example",
+        "domEvent": "change",
+        "tag": "input",
+        "classes": ".filter-input",
+        "text": null,
+        "count": 118000,
+        "sessions": 30000
+      },
+      {
+        "host": "app.tidebrook.example",
+        "domEvent": "click",
+        "tag": "button",
+        "classes": ".icon-btn",
+        "text": null,
+        "count": 77000,
+        "sessions": 15000
+      },
+      {
+        "host": "app.tidebrook.example",
+        "domEvent": "change",
+        "tag": "select",
+        "classes": ".form-select",
+        "text": null,
+        "count": 64000,
+        "sessions": 21000
+      },
+      {
+        "host": "www.tidebrook.example",
+        "domEvent": "click",
+        "tag": "a",
+        "classes": ".nav-link",
+        "text": "Pricing",
+        "count": 58000,
+        "sessions": 51000
+      },
+      {
+        "host": "docs.tidebrook.example",
+        "domEvent": "click",
+        "tag": "a",
+        "classes": ".toc-link",
+        "text": "Authentication",
+        "count": 52000,
+        "sessions": 22000
+      },
+      {
+        "host": "app.tidebrook.example",
+        "domEvent": "click",
+        "tag": "button",
+        "classes": ".btn.btn-primary",
+        "text": "Save changes",
+        "count": 39000,
+        "sessions": 21000
+      },
+      {
+        "host": "www.tidebrook.example",
+        "domEvent": "click",
+        "tag": "a",
+        "classes": ".btn.btn-primary",
+        "text": "Start free trial",
+        "count": 31000,
+        "sessions": 27000
+      },
+      {
+        "host": "app.tidebrook.example",
+        "domEvent": "submit",
+        "tag": "form",
+        "classes": ".login-form",
+        "text": null,
+        "count": 21000,
+        "sessions": 20500
+      }
+    ],
+    "identity": [
+      {
+        "event": "$identify",
+        "lib": "posthog-node",
+        "count": 214000,
+        "necessary": 31030
+      },
+      {
+        "event": "$set",
+        "lib": "posthog-node",
+        "count": 150000,
+        "necessary": 24000
+      },
+      {
+        "event": "$groupidentify",
+        "lib": "web",
+        "count": 92000,
+        "necessary": 23000
+      },
+      {
+        "event": "$identify",
+        "lib": "web",
+        "count": 84200,
+        "necessary": 80100
+      },
+      {
+        "event": "$set",
+        "lib": "web",
+        "count": 64000,
+        "necessary": 51200
+      }
+    ],
+    "bots": [
+      {
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Checkly/2.4 (https://www.checklyhq.com)",
+        "lib": "web",
+        "count": 216000,
+        "identified": 216000
+      },
+      {
+        "userAgent": "Mozilla/5.0 (compatible; AhrefsBot/7.0; +http://ahrefs.com/robot/)",
+        "lib": "posthog-node",
+        "count": 38000,
+        "identified": 38000
+      },
+      {
+        "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/131.0.6778.69 Safari/537.36",
+        "lib": "posthog-node",
+        "count": 29000,
+        "identified": 29000
+      },
+      {
+        "userAgent": "python-requests/2.32.3",
+        "lib": "posthog-node",
+        "count": 12000,
+        "identified": 12000
+      }
+    ],
+    "serverEvents": [
+      {
+        "lib": "posthog-node",
+        "event": "api_request",
+        "count": 720000,
+        "identified": 720000
+      },
+      {
+        "lib": "posthog-node",
+        "event": "$identify",
+        "count": 214000,
+        "identified": 214000
+      },
+      {
+        "lib": "posthog-python",
+        "event": "sync_job_completed",
+        "count": 182000,
+        "identified": 182000
+      },
+      {
+        "lib": "posthog-node",
+        "event": "$set",
+        "count": 150000,
+        "identified": 150000
+      },
+      {
+        "lib": "posthog-node",
+        "event": "$pageview",
+        "count": 79000,
+        "identified": 79000
+      },
+      {
+        "lib": "posthog-node",
+        "event": "report_exported",
+        "count": 61000,
+        "identified": 61000
+      },
+      {
+        "lib": "posthog-python",
+        "event": "webhook_received",
+        "count": 54000,
+        "identified": 54000
+      },
+      {
+        "lib": "posthog-node",
+        "event": "invoice_paid",
+        "count": 2100,
+        "identified": 2100
+      }
+    ]
+  },
+  "replay": {
+    "recordings": 64200,
+    "durations": {
+      "under5s": 19900,
+      "under10s": 26400,
+      "under30s": 35800,
+      "under60s": 41600
+    },
+    "activeUnder5s": 27100,
+    "byFirstUrl": [
+      {
+        "url": "https://www.tidebrook.example/",
+        "count": 18400,
+        "under5s": 7600,
+        "singleUrl": 11900
+      },
+      {
+        "url": "https://app.tidebrook.example/dashboard",
+        "count": 14600,
+        "under5s": 2100,
+        "singleUrl": 1900
+      },
+      {
+        "url": "https://www.tidebrook.example/pricing",
+        "count": 6900,
+        "under5s": 2200,
+        "singleUrl": 3800
+      },
+      {
+        "url": "https://app.tidebrook.example/login",
+        "count": 6300,
+        "under5s": 1800,
+        "singleUrl": 900
+      },
+      {
+        "url": "https://www.tidebrook.example/blog/how-we-cut-churn-in-half",
+        "count": 4100,
+        "under5s": 1900,
+        "singleUrl": 3300
+      },
+      {
+        "url": "https://app.tidebrook.example/inbox",
+        "count": 2900,
+        "under5s": 500,
+        "singleUrl": 400
+      },
+      {
+        "url": "https://www.tidebrook.example/blog/q3-product-update",
+        "count": 2300,
+        "under5s": 1000,
+        "singleUrl": 1800
+      },
+      {
+        "url": "https://docs.tidebrook.example/getting-started",
+        "count": 2200,
+        "under5s": 700,
+        "singleUrl": 1200
+      },
+      {
+        "url": "http://localhost:3000/dashboard",
+        "count": 1900,
+        "under5s": 700,
+        "singleUrl": 600
+      },
+      {
+        "url": "https://docs.tidebrook.example/api/reference",
+        "count": 1700,
+        "under5s": 600,
+        "singleUrl": 1100
+      },
+      {
+        "url": "https://staging.tidebrook.example/dashboard",
+        "count": 1400,
+        "under5s": 500,
+        "singleUrl": 400
+      },
+      {
+        "url": "https://app.tidebrook.example/reports/8812",
+        "count": 1100,
+        "under5s": 200,
+        "singleUrl": 150
+      },
+      {
+        "url": "https://tidebrook-git-feat-new-billing-tidebrook.vercel.app/settings/billing",
+        "count": 400,
+        "under5s": 100,
+        "singleUrl": 100
+      }
+    ]
+  },
+  "flags": {
+    "definitions": [
+      {
+        "key": "new-billing-page",
+        "active": true,
+        "ensureExperienceContinuity": false,
+        "usesStaticCohort": false,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "server",
+        "lastCalledAt": "2026-11-17T22:41:00.000Z"
+      },
+      {
+        "key": "ai-summaries",
+        "active": true,
+        "ensureExperienceContinuity": false,
+        "usesStaticCohort": false,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "all",
+        "lastCalledAt": "2026-11-17T22:41:00.000Z"
+      },
+      {
+        "key": "onboarding-v3",
+        "active": true,
+        "ensureExperienceContinuity": true,
+        "usesStaticCohort": false,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "all",
+        "lastCalledAt": "2026-11-17T22:41:00.000Z"
+      },
+      {
+        "key": "checkout-redesign",
+        "active": true,
+        "ensureExperienceContinuity": true,
+        "usesStaticCohort": false,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "all",
+        "lastCalledAt": "2026-11-17T22:41:00.000Z"
+      },
+      {
+        "key": "beta-customers-only",
+        "active": true,
+        "ensureExperienceContinuity": false,
+        "usesStaticCohort": true,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "all",
+        "lastCalledAt": "2026-11-17T22:41:00.000Z"
+      },
+      {
+        "key": "dark-mode",
+        "active": true,
+        "ensureExperienceContinuity": false,
+        "usesStaticCohort": false,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "client",
+        "lastCalledAt": "2026-11-17T22:41:00.000Z"
+      },
+      {
+        "key": "inbox-zero",
+        "active": true,
+        "ensureExperienceContinuity": false,
+        "usesStaticCohort": false,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "all",
+        "lastCalledAt": "2026-11-17T22:41:00.000Z"
+      },
+      {
+        "key": "report-scheduler",
+        "active": true,
+        "ensureExperienceContinuity": false,
+        "usesStaticCohort": false,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "server",
+        "lastCalledAt": "2026-11-17T22:41:00.000Z"
+      },
+      {
+        "key": "pricing-page-test",
+        "active": true,
+        "ensureExperienceContinuity": false,
+        "usesStaticCohort": false,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "all",
+        "lastCalledAt": "2026-11-17T22:41:00.000Z"
+      },
+      {
+        "key": "search-v2",
+        "active": true,
+        "ensureExperienceContinuity": false,
+        "usesStaticCohort": false,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "all",
+        "lastCalledAt": "2026-11-17T22:41:00.000Z"
+      },
+      {
+        "key": "export-csv-v2",
+        "active": true,
+        "ensureExperienceContinuity": false,
+        "usesStaticCohort": false,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "server",
+        "lastCalledAt": "2026-11-17T22:41:00.000Z"
+      },
+      {
+        "key": "slack-digest",
+        "active": true,
+        "ensureExperienceContinuity": false,
+        "usesStaticCohort": false,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "server",
+        "lastCalledAt": "2026-11-17T22:41:00.000Z"
+      },
+      {
+        "key": "sso-enforcement",
+        "active": true,
+        "ensureExperienceContinuity": false,
+        "usesStaticCohort": false,
+        "usesIsNotSet": true,
+        "evaluationRuntime": "server",
+        "lastCalledAt": "2026-11-17T22:41:00.000Z"
+      },
+      {
+        "key": "grid-virtualization",
+        "active": true,
+        "ensureExperienceContinuity": false,
+        "usesStaticCohort": false,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "client",
+        "lastCalledAt": "2026-11-17T22:41:00.000Z"
+      },
+      {
+        "key": "api-rate-limit-v2",
+        "active": true,
+        "ensureExperienceContinuity": false,
+        "usesStaticCohort": false,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "server",
+        "lastCalledAt": "2026-11-17T22:41:00.000Z"
+      },
+      {
+        "key": "legacy-reports-banner",
+        "active": true,
+        "ensureExperienceContinuity": false,
+        "usesStaticCohort": false,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "all",
+        "lastCalledAt": "2026-08-30T10:12:00.000Z"
+      },
+      {
+        "key": "holiday-promo-2025",
+        "active": true,
+        "ensureExperienceContinuity": false,
+        "usesStaticCohort": false,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "all",
+        "lastCalledAt": "2026-01-04T18:03:00.000Z"
+      },
+      {
+        "key": "mobile-nav-experiment",
+        "active": true,
+        "ensureExperienceContinuity": false,
+        "usesStaticCohort": false,
+        "usesIsNotSet": false,
+        "evaluationRuntime": "all",
+        "lastCalledAt": null
+      }
+    ],
+    "calledByLib": [
+      {
+        "lib": "posthog-node",
+        "locallyEvaluated": "false",
+        "count": 520000,
+        "flags": 9
+      },
+      {
+        "lib": "web",
+        "locallyEvaluated": null,
+        "count": 122000,
+        "flags": 7
+      },
+      {
+        "lib": "posthog-python",
+        "locallyEvaluated": "false",
+        "count": 31000,
+        "flags": 2
+      }
+    ]
+  },
+  "billing": {
+    "discountPercent": null,
+    "limitsUsd": {},
+    "pricing": null,
+    "projectedTotalUsd": null,
+    "currentTotalUsd": null,
+    "periodStart": null,
+    "periodEnd": null
+  },
+  "notes": []
+}
