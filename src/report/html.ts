@@ -286,8 +286,8 @@ export function renderHtml(result: AuditResult): string {
 <main class="viz-root"><div class="wrap">
 <header>
   <div><span class="badge">Unofficial · not affiliated with PostHog Inc.</span><span class="badge">Read-only · runs locally</span>${i.fictional ? '<span class="badge">Fictional demo data</span>' : ''}</div>
-  <h1 style="margin-top:14px">PostHog bill audit · ${e(title)}</h1>
-  <p class="sub">What is driving the bill, and ready-to-paste fixes with dollar estimates.</p>
+  <h1 style="margin-top:14px">HogPost · ${e(title)}</h1>
+  <p class="sub">PostHog bill audit: what is driving the bill, and ready-to-paste fixes with dollar estimates.</p>
   <dl class="meta">
     <dt>Data</dt><dd>${e(sourceText)}${i.projectId || i.projectName ? ` · project ${e([i.projectId, i.projectName ? `“${i.projectName}”` : null].filter(Boolean).join(' '))}` : ''}</dd>
     <dt>Period</dt><dd>Last ${e(i.periodDays)} days, normalized to a 30-day month</dd>

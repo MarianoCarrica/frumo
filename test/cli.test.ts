@@ -81,6 +81,8 @@ describe('CLI end to end', () => {
     expect(html).not.toMatch(/@import/i);
     for (const href of html.match(/href="[^"]+"/g) ?? []) expect(href).toMatch(/^href="(#|https:\/\/posthog\.com\/|https:\/\/us\.posthog\.com\/)/);
     expect(html).toContain('Unofficial · not affiliated with PostHog Inc.');
+    expect(html).toContain('<title>HogPost · Demo: Tidebrook (fictional B2B SaaS)</title>');
+    expect(html).toMatch(/<h1[^>]*>HogPost · Demo: Tidebrook/);
     expect(html).toContain('person_profiles');
     expect(t.out()).toContain(`HTML report written to ${file}`);
   });
