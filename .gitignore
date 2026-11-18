@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+# Local outputs people tend to generate while trying the tool
+report.html
+*.report.html
+snapshot*.json
+!fixtures/*.json
+.env
+.env.*
