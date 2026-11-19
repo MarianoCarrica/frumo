@@ -87,7 +87,7 @@ npx hogpost demo --json > report.json     # machine-readable
 ```sh
 npm install
 npm run demo                 # builds, then runs the demo
-npx . demo --html report.html
+node dist/cli.js demo --html report.html   # after npm run demo (or npm run build)
 ```
 
 ## What it looks at
