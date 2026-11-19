@@ -79,9 +79,11 @@ Estimates
   -v, --version              Show the version
 
 Examples
-  npx @marianoventures/frumo demo --html demo-report.html
-  ${API_KEY_ENV}=… npx @marianoventures/frumo --project 12345 --host https://eu.posthog.com --html report.html
-  npx @marianoventures/frumo --from snapshot.json --json > report.json
+  npx frumo-cli demo
+  npx frumo-cli demo --html report.html
+  ${API_KEY_ENV}=… npx frumo-cli --project 12345 --host https://eu.posthog.com --html report.html
+  npx frumo-cli --from snapshot.json --json > report.json
+  npm i -g frumo-cli && frumo demo
 `;
 
 function compile(patterns: string[] | undefined, flag: string): RegExp[] {

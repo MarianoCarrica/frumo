@@ -126,7 +126,7 @@ describe('repository rules', () => {
 
   it('keeps package metadata as required (name, licence, repository, version in sync)', () => {
     const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as Record<string, unknown>;
-    expect(pkg.name).toBe('@marianoventures/frumo');
+    expect(pkg.name).toBe('frumo-cli');
     expect(pkg.version).toBe(VERSION);
     expect(pkg.license).toBe('MIT');
     expect(pkg.repository).toEqual({ type: 'git', url: 'git+https://github.com/MarianoCarrica/frumo.git' });

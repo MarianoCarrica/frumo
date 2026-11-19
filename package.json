@@ -1,5 +1,5 @@
 {
-  "name": "@marianoventures/frumo",
+  "name": "frumo-cli",
   "version": "0.1.0",
   "description": "Unofficial, read-only CLI that finds what drives your PostHog bill and prints ready-to-paste fixes with dollar estimates. Not affiliated with PostHog Inc.",
   "license": "MIT",

@@ -286,7 +286,7 @@ describe('CLI end to end', () => {
     expect(h.out()).toContain('HOGPOST_API_KEY            Deprecated old name, still read when FRUMO_API_KEY is unset');
     expect(h.out()).toMatch(/^frumo: /);
     expect(h.out()).toContain('  frumo demo ');
-    expect(h.out()).toContain('npx @marianoventures/frumo --project 12345');
+    expect(h.out()).toContain('npx frumo-cli --project 12345');
     expect(h.out()).not.toMatch(/hogpost(?!_API_KEY)/i);
     expect(h.out()).toContain('not affiliated with or endorsed by PostHog Inc.');
     const v = io();
