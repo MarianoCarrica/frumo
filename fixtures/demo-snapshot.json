@@ -1,5 +1,5 @@
 {
-  "schema": "hogpost.snapshot/v1",
+  "schema": "frumo.snapshot/v1",
   "generatedAt": "2026-11-18T09:00:00.000Z",
   "source": {
     "kind": "demo",

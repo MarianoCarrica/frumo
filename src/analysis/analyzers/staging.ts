@@ -52,7 +52,7 @@ export function analyzeStaging(ctx: AnalysisContext): AnalyzerOutput {
     if (!staging) {
       out.findings.push({
         level: 'info',
-        text: `Project "${name}" also uses the shared allowance (${volumes}; ≈${usd(share)}/mo of the bill). Run hogpost with --project ${project.projectId} to audit it.`,
+        text: `Project "${name}" also uses the shared allowance (${volumes}; ≈${usd(share)}/mo of the bill). Run frumo with --project ${project.projectId} to audit it.`,
       });
       continue;
     }

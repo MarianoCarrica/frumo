@@ -1,5 +1,5 @@
 /**
- * The HogPost snapshot: everything the audit needs, in one JSON document.
+ * The frumo snapshot: everything the audit needs, in one JSON document.
  *
  * Live mode collects exactly this shape (and can save it with --save-snapshot); offline mode
  * reads it back with --from. All counts cover the window in `period.days` (they are normalized
@@ -14,7 +14,13 @@ import { PRODUCT_KEYS, isProductKey } from './pricing/types.js';
 import type { ProductKey } from './pricing/types.js';
 import { Issues } from './util/validate.js';
 
-export const SNAPSHOT_SCHEMA = 'hogpost.snapshot/v1';
+export const SNAPSHOT_SCHEMA = 'frumo.snapshot/v1';
+
+/**
+ * Older schema ids for the same v1 format, still accepted when reading (and rewritten to
+ * SNAPSHOT_SCHEMA). hogpost.snapshot/v1 is what the tool wrote before it was renamed to frumo.
+ */
+export const LEGACY_SNAPSHOT_SCHEMAS: readonly string[] = ['hogpost.snapshot/v1'];
 
 /** Usage meters PostHog bills on (organization-wide). */
 export const USAGE_KEYS = [
@@ -243,8 +249,9 @@ export function parseSnapshot(json: unknown, what = 'Snapshot'): Snapshot {
   if (!root) v.throwIfAny(what);
   const r = root as Record<string, unknown>;
 
-  if (r.schema !== SNAPSHOT_SCHEMA) {
-    v.add('schema', `expected "${SNAPSHOT_SCHEMA}" (is this an HogPost snapshot? CSV files need a .csv extension)`);
+  const knownSchema = r.schema === SNAPSHOT_SCHEMA || (typeof r.schema === 'string' && LEGACY_SNAPSHOT_SCHEMAS.includes(r.schema));
+  if (!knownSchema) {
+    v.add('schema', `expected "${SNAPSHOT_SCHEMA}" (is this a frumo snapshot? CSV files need a .csv extension)`);
     v.throwIfAny(what);
   }
 

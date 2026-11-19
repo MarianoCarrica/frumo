@@ -6,6 +6,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { API_KEY_ENV, LEGACY_API_KEY_ENV } from '../src/api-key.js';
 import { HELP } from '../src/args.js';
 import { PUBLIC_PRICING } from '../src/pricing/public-pricing.js';
 import { PRODUCT_KEYS } from '../src/pricing/types.js';
@@ -66,13 +67,33 @@ describe('repository rules', () => {
   });
 
   it('never reads environment variables other than the documented ones', () => {
-    const allowed = new Set(['HOGPOST_API_KEY', 'NO_COLOR', 'FORCE_COLOR', 'TERM']);
+    // HOGPOST_API_KEY is the deprecated pre-rename name, still read as a fallback for FRUMO_API_KEY.
+    const allowed = new Set(['FRUMO_API_KEY', 'HOGPOST_API_KEY', 'NO_COLOR', 'FORCE_COLOR', 'TERM']);
+    expect(API_KEY_ENV).toBe('FRUMO_API_KEY');
+    expect(LEGACY_API_KEY_ENV).toBe('HOGPOST_API_KEY');
+    // env[CONSTANT] reads are resolved through the real constants, so the fallback read is checked too.
+    const constants: Record<string, string> = { API_KEY_ENV, LEGACY_API_KEY_ENV };
     const used = new Set<string>();
     for (const f of files) {
       for (const m of codeOnly(f.text).matchAll(/\b(?:env|process\.env)(?:\.([A-Z_]+)|\[['"]([A-Z_]+)['"]\])/g)) used.add(m[1] ?? m[2] ?? '');
-      for (const m of codeOnly(f.text).matchAll(/env\[(API_KEY_ENV)\]/g)) used.add(m[1] === 'API_KEY_ENV' ? 'HOGPOST_API_KEY' : m[1] ?? '');
+      for (const m of codeOnly(f.text).matchAll(/\benv\[([A-Za-z_$][\w$]*)\]/g)) {
+        const id = m[1] ?? '';
+        used.add(constants[id] ?? `env[${id}] in ${f.path}`);
+      }
     }
-    for (const name of used) expect(allowed.has(name), `${name} is read from the environment; document it or remove it`).toBe(true);
+    for (const name of used) {
+      expect(
+        allowed.has(name),
+        `${name} is read from the environment. Read variables by literal name or through the constants in src/api-key.ts, and document any new one in --help and the README`,
+      ).toBe(true);
+    }
+    expect(HELP, 'document the deprecated key variable in --help').toContain(LEGACY_API_KEY_ENV);
+  });
+
+  it('reads the API key from the environment only in src/api-key.ts', () => {
+    const keyRead = /\benv(?:\.(?:FRUMO|HOGPOST)_API_KEY\b|\[\s*(?:API_KEY_ENV|LEGACY_API_KEY_ENV)\s*\])/;
+    const offenders = files.filter((f) => f.path !== join('src', 'api-key.ts') && keyRead.test(codeOnly(f.text))).map((f) => f.path);
+    expect(offenders, 'Call readApiKey() from src/api-key.ts so the FRUMO_API_KEY → HOGPOST_API_KEY fallback stays in one place').toEqual([]);
   });
 
   it('never uses HTTP methods other than GET and the query POST in the live client', () => {
@@ -84,15 +105,15 @@ describe('repository rules', () => {
 
   it('keeps package metadata as required (name, licence, no repository yet, version in sync)', () => {
     const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as Record<string, unknown>;
-    expect(pkg.name).toBe('hogpost');
+    expect(pkg.name).toBe('frumo');
     expect(pkg.version).toBe(VERSION);
     expect(pkg.license).toBe('MIT');
     expect(pkg.repository).toBeUndefined();
-    expect(pkg.bin).toEqual({ hogpost: 'dist/cli.js' });
+    expect(pkg.bin).toEqual({ frumo: 'dist/cli.js' });
     expect(String(pkg.name), "PostHog's terms bar third-party apps from using \"PostHog\" in their name").not.toMatch(/posthog/i);
     expect((pkg.engines as Record<string, string>).node).toBe('>=18.18');
     const deps = Object.keys((pkg.dependencies as Record<string, string> | undefined) ?? {});
-    expect(deps, 'hogpost has zero runtime dependencies').toEqual([]);
+    expect(deps, 'frumo has zero runtime dependencies').toEqual([]);
     const license = readFileSync(join(root, 'LICENSE'), 'utf8');
     expect(license).toMatch(/MIT License/);
     expect(license).toMatch(/Copyright \(c\) 2026 Mariano Ventures/);
@@ -101,7 +122,7 @@ describe('repository rules', () => {
   it('keeps the README in sync with --help, the price list and the required disclaimer', () => {
     const readme = readFileSync(join(root, 'README.md'), 'utf8');
     const usage = HELP.slice(HELP.indexOf('Usage'), HELP.indexOf('\nExamples')).trimEnd();
-    expect(readme.includes(usage), 'Regenerate the README "CLI reference" block from `hogpost --help`').toBe(true);
+    expect(readme.includes(usage), 'Regenerate the README "CLI reference" block from `frumo --help`').toBe(true);
     expect(readme).toContain('Unofficial. Not affiliated with or endorsed by PostHog Inc. Works with PostHog Cloud (US/EU) and self-hosted PostHog.');
     expect(readme).toContain(`retrieved ${PUBLIC_PRICING.retrieved}`);
     const workingOnThisRepo =

@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 /**
- * HogPost CLI entry point. Unofficial; not affiliated with PostHog Inc.
+ * frumo CLI entry point. Unofficial; not affiliated with PostHog Inc.
  * All work happens locally; in live mode the only network peer is the PostHog host you choose.
  */
 import { readFile, writeFile } from 'node:fs/promises';
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { API_KEY_ENV, HELP, parseCliArgs } from './args.js';
+import { API_KEY_ENV, LEGACY_API_KEY_ENV, readApiKey } from './api-key.js';
+import { HELP, parseCliArgs } from './args.js';
 import type { CliArgs } from './args.js';
 import { runAnalysis } from './analysis/index.js';
 import { parsePricingOverride } from './pricing/override.js';
@@ -67,19 +68,23 @@ export async function main(argv: readonly string[], io: CliIo): Promise<number> 
     } else if (args.mode === 'file') {
       snapshot = await readInputFile(args.from ?? '', { days: args.days, toolVersion: VERSION, ...(io.now ? { now: io.now } : {}) });
     } else {
-      const raw = io.env[API_KEY_ENV]?.trim();
-      if (!raw) {
+      const key = readApiKey(io.env);
+      if (!key) {
         throw new UsageError(
-          `Live mode needs a PostHog personal API key in ${API_KEY_ENV} (read-only scopes: query:read; recommended billing:read, project:read, feature_flag:read).\n  read -rs ${API_KEY_ENV} && export ${API_KEY_ENV}\nTry "hogpost demo" to see a report without an account.`,
+          `Live mode needs a PostHog personal API key in ${API_KEY_ENV} (read-only scopes: query:read; recommended billing:read, project:read, feature_flag:read).\n  read -rs ${API_KEY_ENV} && export ${API_KEY_ENV}\nTry "frumo demo" to see a report without an account.`,
         );
       }
-      apiKey = new Secret(raw);
+      apiKey = new Secret(key.value);
+      if (key.variable === LEGACY_API_KEY_ENV) {
+        progress(`Using the key from ${LEGACY_API_KEY_ENV}, which is deprecated: rename it to ${API_KEY_ENV}.`);
+      }
       const host = normalizeHost(args.host, { allowHttp: args.allowHttp });
       for (const note of host.notes) progress(note);
       const verbose = args.verbose;
       const client = new PostHogReadOnlyClient({
         origin: host.origin,
         apiKey,
+        apiKeyVariable: key.variable,
         toolVersion: VERSION,
         ...(io.fetchImpl ? { fetchImpl: io.fetchImpl } : {}),
         ...(io.sleep ? { sleep: io.sleep } : {}),
@@ -133,14 +138,14 @@ export async function main(argv: readonly string[], io: CliIo): Promise<number> 
   } catch (error) {
     const message = redact(error instanceof Error ? error.message : String(error), secrets());
     if (error instanceof UsageError) {
-      io.stderr(`hogpost: ${message}\n`);
+      io.stderr(`frumo: ${message}\n`);
       return 2;
     }
     if (error instanceof ApiError || error instanceof ValidationError) {
-      io.stderr(`hogpost: ${message}\n`);
+      io.stderr(`frumo: ${message}\n`);
       return 1;
     }
-    io.stderr(`hogpost: unexpected error: ${message}\n`);
+    io.stderr(`frumo: unexpected error: ${message}\n`);
     if (args?.verbose && error instanceof Error && error.stack) io.stderr(`${redact(error.stack, secrets())}\n`);
     return 1;
   }
@@ -164,7 +169,7 @@ async function loadPricing(path: string): Promise<PricingOverride> {
 
 function printQueries(days: number): string {
   const lines = [
-    `-- Every HogQL query HogPost runs in live mode (window: last ${days} days).`,
+    `-- Every HogQL query frumo runs in live mode (window: last ${days} days).`,
     '-- All are read-only SELECTs sent to POST /api/projects/:id/query/ (scope query:read).',
     '-- Paste any of them into PostHog\'s SQL editor to check them yourself.',
     '',
@@ -178,7 +183,7 @@ interface ErrorEmitter {
 }
 
 /**
- * Stops quietly when the reader closes the pipe early (e.g. `hogpost demo | head`) instead of
+ * Stops quietly when the reader closes the pipe early (e.g. `frumo demo | head`) instead of
  * crashing with an unhandled EPIPE error. Any other stream error still surfaces.
  */
 export function exitOnBrokenPipe(stream: ErrorEmitter, exit: (code: number) => void): void {
@@ -217,7 +222,7 @@ if (isEntryPoint()) {
       process.exitCode = code;
     },
     (error: unknown) => {
-      process.stderr.write(`hogpost: ${redact(error instanceof Error ? error.message : String(error))}\n`);
+      process.stderr.write(`frumo: ${redact(error instanceof Error ? error.message : String(error))}\n`);
       process.exitCode = 1;
     },
   );

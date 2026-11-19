@@ -1,13 +1,13 @@
-# HogPost
+# frumo
 
 **Find what's driving your PostHog bill and get ready-to-paste fixes, each with a dollar estimate.**
 A free, open-source, read-only CLI that runs on your own machine.
 
 > **Unofficial. Not affiliated with or endorsed by PostHog Inc. Works with PostHog Cloud (US/EU) and self-hosted PostHog.**
-> "PostHog" is used only to describe compatibility. HogPost is an independent project.
+> "PostHog" is used only to describe compatibility. frumo is an independent project.
 
 ```text
-$ npx hogpost demo
+$ npx frumo demo
 
 ESTIMATED MONTHLY BILL  whole organization
   Product analytics events                                  9.02M events        $291
@@ -77,12 +77,12 @@ The demo data is a **fictional** company ("Tidebrook", hosts under the reserved 
 Node.js 18.18 or newer. No account needed for the demo:
 
 ```sh
-npx hogpost demo                          # terminal summary
-npx hogpost demo --html demo-report.html  # self-contained HTML report
-npx hogpost demo --json > report.json     # machine-readable
+npx frumo demo                          # terminal summary
+npx frumo demo --html demo-report.html  # self-contained HTML report
+npx frumo demo --json > report.json     # machine-readable
 ```
 
-`hogpost` is not on npm yet. From a clone:
+`frumo` is not on npm yet. From a clone:
 
 ```sh
 npm install
@@ -92,7 +92,7 @@ node dist/cli.js demo --html report.html   # after npm run demo (or npm run buil
 
 ## What it looks at
 
-| Area | What HogPost measures | Fixes it can suggest |
+| Area | What frumo measures | Fixes it can suggest |
 |---|---|---|
 | Product analytics | Top events by cost; `$autocapture` by page, DOM event and element; `$pageview`/`$pageleave`; `$web_vitals`/`$dead_click`; events PostHog doesn't bill | `autocapture.url_ignorelist` for marketing pages, `dom_event_allowlist`, `css_selector_ignorelist` for noisy elements, `capture_pageleave: false`, `capture_dead_clicks: false`, `capture_performance: { web_vitals: false }` |
 | Person profiles | Identified vs anonymous events; identified events from visitors posthog-js reported as *not* identified (`$is_identified: false`), by page | `person_profiles: 'identified_only'`; no `group()`/`setPersonProperties()` for anonymous visitors |
@@ -116,7 +116,7 @@ In PostHog: **Settings → Personal API keys → Create key**. Give it only thes
 
 | Scope | Needed for | If missing |
 |---|---|---|
-| `query:read` | **Required.** 13 hard-coded HogQL `SELECT`s: event counts, autocapture, identity calls, bots, replay metadata | Nothing to analyze; HogPost stops |
+| `query:read` | **Required.** 13 hard-coded HogQL `SELECT`s: event counts, autocapture, identity calls, bots, replay metadata | Nothing to analyze; frumo stops |
 | `billing:read` | Organization usage per project (including `/flags` requests, which no query can see), your plan's tiers, discount and billing limits | Costs use public prices and this project only; flag requests are "not analyzed" |
 | `project:read` | Replay and autocapture settings; project names | Settings-based checks are skipped |
 | `feature_flag:read` | Active flags, stale flags, flags that can't be evaluated locally | Flag details are skipped |
@@ -125,19 +125,19 @@ No write scope is ever needed. `session_recording:read` and `event_definition:re
 
 ### 2. Put the key in an environment variable
 
-The key is read **only** from `HOGPOST_API_KEY`. HogPost refuses keys passed as command-line arguments (they end up in shell history and process lists).
+The key is read **only** from the `FRUMO_API_KEY` environment variable. frumo refuses keys passed as command-line arguments (they end up in shell history and process lists). For compatibility, the old name `HOGPOST_API_KEY` still works when `FRUMO_API_KEY` is unset, but it is deprecated: rename it.
 
 ```sh
-read -rs HOGPOST_API_KEY && export HOGPOST_API_KEY   # paste, press Enter (nothing is echoed)
+read -rs FRUMO_API_KEY && export FRUMO_API_KEY   # paste, press Enter (nothing is echoed)
 ```
 
 ### 3. Run it
 
 ```sh
-npx hogpost --project 12345                                  # US Cloud (default host https://us.posthog.com)
-npx hogpost --project 12345 --host https://eu.posthog.com    # EU Cloud
-npx hogpost --project 12345 --host https://posthog.example.internal   # self-hosted
-npx hogpost --project 12345 --html report.html --save-snapshot snapshot.json
+npx frumo --project 12345                                  # US Cloud (default host https://us.posthog.com)
+npx frumo --project 12345 --host https://eu.posthog.com    # EU Cloud
+npx frumo --project 12345 --host https://posthog.example.internal   # self-hosted
+npx frumo --project 12345 --html report.html --save-snapshot snapshot.json
 ```
 
 `--project` is the numeric ID from **Project settings**. Pasting the ingestion host (`us.i.posthog.com`, `eu.i.posthog.com`) is fine: it is mapped to the API host.
@@ -151,9 +151,9 @@ npx hogpost --project 12345 --html report.html --save-snapshot snapshot.json
 | `GET /api/billing/usage/` | billing:read | Daily usage per project for the window (events, identified events, recordings, flag requests, survey responses, exceptions) |
 | `GET /api/organizations/@current/projects/` | project:read | Project names for that breakdown |
 | `GET /api/projects/:id/feature_flags/` | feature_flag:read | Active flags (paginated) |
-| `POST /api/projects/:id/query/` | query:read | 13 HogQL `SELECT`s, listed by `hogpost --print-queries` |
+| `POST /api/projects/:id/query/` | query:read | 13 HogQL `SELECT`s, listed by `frumo --print-queries` |
 
-`POST /api/projects/:id/query/` is PostHog's query endpoint. It is a **read**: HogPost only sends `HogQLQuery` bodies whose SQL is one of the hard-coded `SELECT`s in [`src/sources/live/queries.ts`](src/sources/live/queries.ts). No user input is ever put into SQL (the only parameter is the window length, validated as an integer from 1 to 90 days). The client refuses any other method, path, query kind or SQL before sending, and tests check this with a mocked `fetch`.
+`POST /api/projects/:id/query/` is PostHog's query endpoint. It is a **read**: frumo only sends `HogQLQuery` bodies whose SQL is one of the hard-coded `SELECT`s in [`src/sources/live/queries.ts`](src/sources/live/queries.ts). No user input is ever put into SQL (the only parameter is the window length, validated as an integer from 1 to 90 days). The client refuses any other method, path, query kind or SQL before sending, and tests check this with a mocked `fetch`.
 
 **Rate limits.** Requests are sequential (about 20 in total, with a short pause between them). A `429` is retried after the `Retry-After` header (up to 60 s), other failures back off exponentially (1, 2, 4, 8 s). Queries made with a personal API key count against PostHog's hourly query read budget; if a big project hits it, re-run later or read a shorter window with `--days 7` (results are scaled to 30 days). Any optional call that fails is skipped and listed under "Notes", so a partial audit still comes out.
 
@@ -166,15 +166,15 @@ npx hogpost --project 12345 --html report.html --save-snapshot snapshot.json
 `--save-snapshot snapshot.json` stores exactly what live mode collected (never the key). Re-run the audit any time, or on another machine, with:
 
 ```sh
-npx hogpost --from snapshot.json --html report.html
-npx hogpost demo --save-snapshot template.json   # a complete example to edit by hand
+npx frumo --from snapshot.json --html report.html
+npx frumo demo --save-snapshot template.json   # a complete example to edit by hand
 ```
 
-The format is `hogpost.snapshot/v1`, defined and validated in [`src/snapshot.ts`](src/snapshot.ts). Every section except `period` is optional; analyses without their data are listed as "not analyzed". All counts cover `period.days` days. An abbreviated example:
+The format is `frumo.snapshot/v1`, defined and validated in [`src/snapshot.ts`](src/snapshot.ts). Snapshots saved before the rename (`hogpost.snapshot/v1`) are the same format and still load. Every section except `period` is optional; analyses without their data are listed as "not analyzed". All counts cover `period.days` days. An abbreviated example:
 
 ```jsonc
 {
-  "schema": "hogpost.snapshot/v1",
+  "schema": "frumo.snapshot/v1",
   "generatedAt": "2026-11-18T09:00:00.000Z",
   "source": { "kind": "live", "host": "https://eu.posthog.com", "toolVersion": "0.1.0", "fictional": false, "label": null },
   "project": { "id": "12345", "name": "Production" },
@@ -241,7 +241,7 @@ A CSV gives event-level drivers and costs only (and assumes this project is your
 ## How the estimates are calculated
 
 1. **Monthly volume.** Counts are scaled from the window to a 30-day month. When billing usage is available, breakdown shares from HogQL are applied to the billed totals, so the two stay consistent.
-2. **Organization-wide usage.** PostHog bills usage and free allowances across all projects of an organization, so the bill is computed on the sum of every project's usage. Without `billing:read` (or a CSV), HogPost assumes the audited project is the whole organization and says so.
+2. **Organization-wide usage.** PostHog bills usage and free allowances across all projects of an organization, so the bill is computed on the sum of every project's usage. Without `billing:read` (or a CSV), frumo assumes the audited project is the whole organization and says so.
 3. **Graduated tiers.** Each product's monthly units go through its price tiers: the first tier is the free allowance, and each unit is charged at the rate of the tier it falls into ([`src/pricing/math.ts`](src/pricing/math.ts), unit-tested against PostHog's own worked examples, e.g. 10M anonymous events ≈ $324). **Identified events** pay the event rate plus the person-profile add-on rate (the "Person profiles" line on the invoice).
 4. **Cost drivers** are a share of the bill: a slice's units × your *average effective rate* for that product (anonymous events at the event rate, identified ones at event + person-profile rate). Drivers overlap (bot traffic also contains autocapture) and are not additive.
 5. **Savings per fix** = cost now − cost after the fix's volume change, re-priced through the tiers (so a fix that moves you into a cheaper tier, or into the free allowance, is valued correctly). Each fix states its volume assumption, for example "drops 100% of `$pageleave`" or "requests beyond ~1 per page load are server-side checks; local evaluation replaces them with 4 instances × 86,400 polls/month".
@@ -275,12 +275,12 @@ All prices live in one file, [`src/pricing/public-pricing.ts`](src/pricing/publi
 | Surveys (responses) | 1,500 | 1,500–2,000 $0.10 · 2–10K $0.035 · 10–20K $0.015 · 20K+ $0.01 |
 | Error tracking (exceptions) | 100K | 100–325K $0.00037 · 325K–10M $0.00014 · 10M+ $0.000115 |
 
-If a price can't be verified, its tiers are `null`: HogPost then shows volumes without a dollar figure for that product and says so in the report. In live mode with `billing:read`, tiers from your own plan (`GET /api/billing/`) replace the public ones where they parse cleanly; `--public-pricing` turns that off.
+If a price can't be verified, its tiers are `null`: frumo then shows volumes without a dollar figure for that product and says so in the report. In live mode with `billing:read`, tiers from your own plan (`GET /api/billing/`) replace the public ones where they parse cleanly; `--public-pricing` turns that off.
 
 ### Pricing overrides (custom contracts)
 
 ```sh
-npx hogpost --project 12345 --pricing our-contract.json
+npx frumo --project 12345 --pricing our-contract.json
 ```
 
 ```json
@@ -302,7 +302,7 @@ Products you don't list keep public prices. Product keys: `product_analytics`, `
 
 - **Runs locally.** The only network peer is the PostHog host you choose (live mode). Demo and offline modes make no network requests. There is no telemetry, no analytics and no update check.
 - **Read-only.** Only `GET`s and the hard-coded HogQL `SELECT`s above. Write methods are refused in code and in tests.
-- **Your key** is read only from `HOGPOST_API_KEY`, kept in a wrapper that prints as `[REDACTED]`, sent only in the `Authorization` header over HTTPS (plain HTTP only for localhost or with `--allow-http`), never logged, never written to disk, and redacted from every error message. Redirects are not followed, so the key can't be forwarded to another host.
+- **Your key** is read only from `FRUMO_API_KEY` (or the deprecated `HOGPOST_API_KEY` when that is unset), kept in a wrapper that prints as `[REDACTED]`, sent only in the `Authorization` header over HTTPS (plain HTTP only for localhost or with `--allow-http`), never logged, never written to disk, and redacted from every error message. Redirects are not followed, so the key can't be forwarded to another host.
 - **Snapshots and reports** contain aggregated counts, hostnames, URL paths, user-agent strings, element classes/texts and flag keys, but no person data or credentials. Review them before sharing.
 - **The HTML report** is one file with inline CSS and a few lines of inline JavaScript (copy buttons). Its Content-Security-Policy (`default-src 'none'`) blocks any network request.
 
@@ -310,13 +310,14 @@ Products you don't list keep public prices. Product keys: `product_analytics`, `
 
 ```text
 Usage
-  hogpost demo                              Run on bundled fictional data (no account needed)
-  hogpost --project <id> [--host <url>]     Live, read-only audit (key in HOGPOST_API_KEY)
-  hogpost --from <snapshot.json|counts.csv> Offline audit from a saved snapshot or event-count CSV
-  hogpost --print-queries                   Show every HogQL query HogPost can run, then exit
+  frumo demo                              Run on bundled fictional data (no account needed)
+  frumo --project <id> [--host <url>]     Live, read-only audit (key in FRUMO_API_KEY)
+  frumo --from <snapshot.json|counts.csv> Offline audit from a saved snapshot or event-count CSV
+  frumo --print-queries                   Show every HogQL query frumo can run, then exit
 
 Live mode
-  HOGPOST_API_KEY            Personal API key (env var only; never pass it as an argument)
+  FRUMO_API_KEY              Personal API key (env var only; never pass it as an argument)
+  HOGPOST_API_KEY            Deprecated old name, still read when FRUMO_API_KEY is unset
   --project <id>             Numeric project ID (Project settings → Project ID)
   --host <url>               https://us.posthog.com (default), https://eu.posthog.com, or your self-hosted URL
   --days <n>                 Window to read, 1-90 days (default 30); results are scaled to 30 days
@@ -345,7 +346,7 @@ Estimates
   -v, --version              Show the version
 ```
 
-Exit codes: `0` success, `1` failure (API, file or validation error), `2` usage error. `--json` output follows the `hogpost.report/v1` shape in [`src/analysis/model.ts`](src/analysis/model.ts).
+Exit codes: `0` success, `1` failure (API, file or validation error), `2` usage error. `--json` output follows the `frumo.report/v1` shape in [`src/analysis/model.ts`](src/analysis/model.ts).
 
 ## Development
 
@@ -371,7 +372,7 @@ TypeScript is pinned to 6.0.x because typescript-eslint supports TypeScript belo
 
 ## Disclaimer and licence
 
-HogPost is unofficial and not affiliated with, endorsed by or sponsored by PostHog Inc. PostHog is a trademark of PostHog Inc. and is used here only to describe compatibility. Estimates are provided as-is and can differ from your invoice; review every change before shipping it.
+frumo is unofficial and not affiliated with, endorsed by or sponsored by PostHog Inc. PostHog is a trademark of PostHog Inc. and is used here only to describe compatibility. Estimates are provided as-is and can differ from your invoice; review every change before shipping it.
 
 [MIT](LICENSE) © 2026 Mariano Ventures
 

@@ -1,8 +1,8 @@
 /**
- * Every HogQL query HogPost can run, hard-coded. Nothing from user input is ever put into SQL:
+ * Every HogQL query frumo can run, hard-coded. Nothing from user input is ever put into SQL:
  * the only parameter is the window length, validated as an integer between 1 and MAX_DAYS.
  * All queries are SELECTs that aggregate counts; none of them return personal data.
- * `hogpost --print-queries` prints them so you can review or run them yourself.
+ * `frumo --print-queries` prints them so you can review or run them yourself.
  */
 import { BOT_UA_PATTERN, NON_BILLABLE_EVENTS, NON_BILLABLE_EVENT_PREFIX, SERVER_LIBS } from '../../posthog-facts.js';
 import { UsageError } from '../../util/errors.js';
@@ -262,7 +262,7 @@ LIMIT 300`,
   ];
 
   return definitions.map(([id, purpose, sql]) => {
-    const query: HogQLQuery = Object.freeze({ id, name: `hogpost_${id}`, purpose, sql: sql.trim() });
+    const query: HogQLQuery = Object.freeze({ id, name: `frumo_${id}`, purpose, sql: sql.trim() });
     if (!isSingleSelect(query.sql)) throw new Error(`Query ${id} must be a single SELECT`);
     issued.add(query);
     return query;

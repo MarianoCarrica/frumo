@@ -213,7 +213,7 @@ const flag = (key, extra = {}) => ({
 });
 
 const snapshot = {
-  schema: 'hogpost.snapshot/v1',
+  schema: 'frumo.snapshot/v1',
   generatedAt: now,
   source: { kind: 'demo', host: null, toolVersion: '0.1.0', fictional: true, label: 'Tidebrook (fictional B2B SaaS)' },
   project: { id: '21345', name: 'Tidebrook (production)' },

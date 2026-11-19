@@ -84,7 +84,7 @@ describe('live collection (fake PostHog, no network)', () => {
   });
 
   it('keeps going without optional scopes and records what was skipped', async () => {
-    const { snap, progress } = await collect({ failPaths: { '/api/billing/': 403, '/api/billing/usage/': 403, [`/api/projects/${PROJECT}/feature_flags/`]: 403 }, failQueries: ['hogpost_replay_first_urls'] });
+    const { snap, progress } = await collect({ failPaths: { '/api/billing/': 403, '/api/billing/usage/': 403, [`/api/projects/${PROJECT}/feature_flags/`]: 403 }, failQueries: ['frumo_replay_first_urls'] });
     expect(snap.orgUsage).toBeNull();
     expect(snap.billing).toBeNull();
     expect(snap.flags?.definitions).toBeNull();
@@ -104,7 +104,7 @@ describe('live collection (fake PostHog, no network)', () => {
   });
 
   it('stops when the first HogQL query fails (nothing to analyze)', async () => {
-    await expect(collect({ failQueries: ['hogpost_totals'] })).rejects.toThrow(/query:read/);
+    await expect(collect({ failQueries: ['frumo_totals'] })).rejects.toThrow(/query:read/);
   });
 });
 

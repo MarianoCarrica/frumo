@@ -8,6 +8,7 @@
  * (so the key is never forwarded to another host), requests are sequential, 429s are retried
  * after Retry-After, and every error message is redacted.
  */
+import { API_KEY_ENV } from '../../api-key.js';
 import { ApiError, ReadOnlyViolation } from '../../util/errors.js';
 import { Secret, redact } from '../../util/secret.js';
 import { isIssuedQuery, isSingleSelect } from './queries.js';
@@ -17,6 +18,8 @@ export interface ClientOptions {
   /** Normalized origin, e.g. https://us.posthog.com */
   origin: string;
   apiKey: Secret;
+  /** Environment variable the key came from, named in the 401 message (default FRUMO_API_KEY). */
+  apiKeyVariable?: string;
   toolVersion: string;
   fetchImpl?: typeof fetch;
   sleep?: (ms: number) => Promise<void>;
@@ -24,7 +27,7 @@ export interface ClientOptions {
   log?: (line: string) => void;
   timeoutMs?: number;
   maxRetries?: number;
-  /** Longest Retry-After HogPost is willing to wait. */
+  /** Longest Retry-After frumo is willing to wait. */
   maxRetryAfterSeconds?: number;
   /** Pause between consecutive requests. */
   minIntervalMs?: number;
@@ -47,6 +50,7 @@ export const defaultSleep = (ms: number): Promise<void> => new Promise((resolve)
 export class PostHogReadOnlyClient {
   readonly origin: string;
   private readonly apiKey: Secret;
+  private readonly apiKeyVariable: string;
   private readonly fetchImpl: typeof fetch;
   private readonly sleep: (ms: number) => Promise<void>;
   private readonly log: (line: string) => void;
@@ -63,6 +67,7 @@ export class PostHogReadOnlyClient {
   constructor(options: ClientOptions) {
     this.origin = options.origin.replace(/\/+$/, '');
     this.apiKey = options.apiKey;
+    this.apiKeyVariable = options.apiKeyVariable ?? API_KEY_ENV;
     this.fetchImpl = options.fetchImpl ?? globalThis.fetch;
     this.sleep = options.sleep ?? defaultSleep;
     this.log = options.log ?? (() => undefined);
@@ -71,8 +76,8 @@ export class PostHogReadOnlyClient {
     this.maxRetryAfterSeconds = options.maxRetryAfterSeconds ?? 60;
     this.minIntervalMs = options.minIntervalMs ?? 250;
     this.queryTimeoutMs = options.queryTimeoutMs ?? 120_000;
-    this.userAgent = `hogpost/${options.toolVersion} (read-only billing audit)`;
-    if (typeof this.fetchImpl !== 'function') throw new Error('global fetch is unavailable: HogPost needs Node.js 18 or newer.');
+    this.userAgent = `frumo/${options.toolVersion} (read-only billing audit)`;
+    if (typeof this.fetchImpl !== 'function') throw new Error('global fetch is unavailable: frumo needs Node.js 18 or newer.');
   }
 
   /** GET /api/... and parse JSON. */
@@ -168,7 +173,7 @@ export class PostHogReadOnlyClient {
             hint = '';
           }
         }
-        throw new ApiError(`${label} was redirected; HogPost does not follow redirects so your key stays on the host you chose.${hint}`, {
+        throw new ApiError(`${label} was redirected; frumo does not follow redirects so your key stays on the host you chose.${hint}`, {
           status: response.status,
           path: url.pathname,
         });
@@ -179,7 +184,7 @@ export class PostHogReadOnlyClient {
         if (attempt < this.maxRetries) {
           if (retryAfter !== null && retryAfter > this.maxRetryAfterSeconds) {
             throw new ApiError(
-              `${label}: PostHog rate limit (429). It asked to wait ${Math.ceil(retryAfter)}s, longer than HogPost waits (${this.maxRetryAfterSeconds}s). Try again later, or read less with --days 7.`,
+              `${label}: PostHog rate limit (429). It asked to wait ${Math.ceil(retryAfter)}s, longer than frumo waits (${this.maxRetryAfterSeconds}s). Try again later, or read less with --days 7.`,
               { status: 429, path: url.pathname, code: 'rate_limited' },
             );
           }
@@ -217,7 +222,7 @@ export class PostHogReadOnlyClient {
     }
     detail = redact(detail, [this.apiKey]);
     let message = `${label} → ${status}${code ? ` ${code}` : ''}${detail ? `: ${detail}` : ''}`;
-    if (status === 401) message = `${label} → 401: PostHog rejected the API key in HOGPOST_API_KEY (invalid, revoked, or for another region/host).`;
+    if (status === 401) message = `${label} → 401: PostHog rejected the API key in ${this.apiKeyVariable} (invalid, revoked, or for another region/host).`;
     else if (status === 403) message += options.scope ? ` (the key probably lacks the ${options.scope} scope, or access to this project)` : '';
     else if (status === 404) message += ' (not found: check --project and --host)';
     return new ApiError(redact(message, [this.apiKey]), { status, path, code });

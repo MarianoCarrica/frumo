@@ -1,5 +1,5 @@
 {
-  "name": "hogpost",
+  "name": "frumo",
   "version": "0.1.0",
   "description": "Unofficial, read-only CLI that finds what drives your PostHog bill and prints ready-to-paste fixes with dollar estimates. Not affiliated with PostHog Inc.",
   "license": "MIT",
@@ -7,7 +7,7 @@
   "private": false,
   "type": "module",
   "bin": {
-    "hogpost": "dist/cli.js"
+    "frumo": "dist/cli.js"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

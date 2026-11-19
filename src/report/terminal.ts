@@ -54,7 +54,7 @@ export function renderTerminal(result: AuditResult, options: TerminalOptions): s
     out.push(...wrapText(text, width, indent));
   };
 
-  out.push(`${p.bold('HogPost')} ${result.tool.version} ${p.dim('· PostHog bill audit · unofficial, not affiliated with PostHog Inc.')}`);
+  out.push(`${p.bold('frumo')} ${result.tool.version} ${p.dim('· PostHog bill audit · unofficial, not affiliated with PostHog Inc.')}`);
   out.push('');
   const i = result.input;
   const sourceText =
