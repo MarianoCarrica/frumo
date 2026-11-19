@@ -2,7 +2,9 @@ import { EventEmitter } from 'node:events';
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { DISCLAIMER } from '../src/analysis/index.js';
+import { parseCliArgs } from '../src/args.js';
 import { exitOnBrokenPipe, main } from '../src/cli.js';
 import type { CliIo } from '../src/cli.js';
 import type { AuditResult } from '../src/analysis/model.js';
@@ -14,6 +16,14 @@ const KEY = 'phx_CLIKEY0123456789abcdefghijklmnopqrstuvw';
 /** Start of an ANSI escape sequence (ESC + "["). */
 const ANSI = `${String.fromCharCode(27)}[`;
 const dir = mkdtempSync(join(tmpdir(), 'frumo-test-'));
+
+/** The HTML report's CSP, verbatim. The waitlist link must not need any change to it. */
+const CSP = "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'";
+const CLI_WAITLIST = 'https://frumo.marianoventures.com/?ref=cli';
+const REPORT_WAITLIST = 'https://frumo.marianoventures.com/?ref=report';
+const WAITLIST_SENTENCE = 'Found this useful? Join the frumo waitlist:';
+/** Every href the HTML report may contain: in-page anchors, PostHog pages, and exactly the report waitlist link. */
+const ALLOWED_HREF = /^href="(#|https:\/\/posthog\.com\/|https:\/\/us\.posthog\.com\/|https:\/\/frumo\.marianoventures\.com\/\?ref=report")/;
 
 function io(env: Record<string, string> = {}, fetchImpl?: typeof fetch) {
   const out: string[] = [];
@@ -80,13 +90,32 @@ describe('CLI end to end', () => {
     expect(html).not.toMatch(/<img\b/i);
     expect(html).not.toMatch(/url\(\s*['"]?https?:/i);
     expect(html).not.toMatch(/@import/i);
-    for (const href of html.match(/href="[^"]+"/g) ?? []) expect(href).toMatch(/^href="(#|https:\/\/posthog\.com\/|https:\/\/us\.posthog\.com\/)/);
+    for (const href of html.match(/href="[^"]+"/g) ?? []) expect(href).toMatch(ALLOWED_HREF);
     expect(html).toContain('Unofficial · not affiliated with PostHog Inc.');
     expect(html).toContain('<title>frumo · Demo: Tidebrook (fictional B2B SaaS)</title>');
     expect(html).toMatch(/<h1[^>]*>frumo · Demo: Tidebrook/);
     expect(html).not.toMatch(/hogpost/i);
     expect(html).toContain('person_profiles');
     expect(t.out()).toContain(`HTML report written to ${file}`);
+  });
+
+  it('allows only known links in the HTML report (the allow-list still rejects anything new)', () => {
+    for (const ok of ['href="#fix-x"', 'href="https://posthog.com/docs"', 'href="https://us.posthog.com/settings"', `href="${REPORT_WAITLIST}"`]) {
+      expect(ok).toMatch(ALLOWED_HREF);
+    }
+    const rejected = [
+      'href="https://example.com/"',
+      'href="http://posthog.com/"',
+      'href="//evil.example/"',
+      'href="javascript:alert(1)"',
+      'href="https://frumo.marianoventures.com/"',
+      `href="${CLI_WAITLIST}"`,
+      `href="${REPORT_WAITLIST}&x=1"`,
+      'href="http://frumo.marianoventures.com/?ref=report"',
+      'href="https://frumo.marianoventures.com.evil.example/?ref=report"',
+      'href="https://evil.example/frumo.marianoventures.com/?ref=report"',
+    ];
+    for (const bad of rejected) expect(bad).not.toMatch(ALLOWED_HREF);
   });
 
   it('escapes hostile data in the HTML report', async () => {
@@ -257,7 +286,7 @@ describe('CLI end to end', () => {
     expect(h.out()).toContain('HOGPOST_API_KEY            Deprecated old name, still read when FRUMO_API_KEY is unset');
     expect(h.out()).toMatch(/^frumo: /);
     expect(h.out()).toContain('  frumo demo ');
-    expect(h.out()).toContain('npx frumo --project 12345');
+    expect(h.out()).toContain('npx frumo-cli --project 12345');
     expect(h.out()).not.toMatch(/hogpost(?!_API_KEY)/i);
     expect(h.out()).toContain('not affiliated with or endorsed by PostHog Inc.');
     const v = io();
@@ -285,5 +314,103 @@ describe('piping output', () => {
     stream.emit('error', Object.assign(new Error('write EPIPE'), { code: 'EPIPE' }));
     expect(codes).toEqual([0]);
     expect(() => stream.emit('error', Object.assign(new Error('disk on fire'), { code: 'EIO' }))).toThrow('disk on fire');
+  });
+});
+
+describe('waitlist footer', () => {
+  const runHtml = async (args: string[]) => {
+    const file = join(dir, `waitlist-${args.join('_').replace(/[^a-z_-]/gi, '')}.html`);
+    const t = io();
+    expect(await main(['demo', ...args, '--html', file], t.io)).toBe(0);
+    return { html: readFileSync(file, 'utf8'), out: t.out(), err: t.err() };
+  };
+
+  it('ends the terminal summary with the cli waitlist line, right after the disclaimer', async () => {
+    const t = io();
+    expect(await main(['demo'], t.io)).toBe(0);
+    const text = t.out();
+    expect(text).toContain(`\n${WAITLIST_SENTENCE} ${CLI_WAITLIST}\n`);
+    expect(text).not.toContain('?ref=report');
+    expect(text.split(CLI_WAITLIST)).toHaveLength(2); // printed once
+    const lines = text.split('\n');
+    const at = lines.indexOf(`${WAITLIST_SENTENCE} ${CLI_WAITLIST}`);
+    expect(lines[at - 1]).toBe('');
+    expect(DISCLAIMER.endsWith(lines[at - 2] ?? '<missing>'), 'the line before the waitlist is the end of the disclaimer').toBe(true);
+  });
+
+  it('keeps the cli URL intact when the terminal summary is colored', async () => {
+    const t = io({ FORCE_COLOR: '1' });
+    expect(await main(['demo'], t.io)).toBe(0);
+    expect(t.out()).toContain(ANSI);
+    expect(t.out()).toContain(`${WAITLIST_SENTENCE} ${CLI_WAITLIST}`);
+  });
+
+  it('ends the HTML footer with a plain report waitlist link and leaves the CSP alone', async () => {
+    const { html } = await runHtml(['--quiet']);
+    const link = `<a href="${REPORT_WAITLIST}">${REPORT_WAITLIST}</a>`;
+    expect(html).toContain(`<p>${WAITLIST_SENTENCE} ${link}</p>\n</footer>`);
+    expect(html.indexOf(link)).toBeGreaterThan(html.indexOf('This file loads nothing from the network.'));
+    expect(html).not.toContain('?ref=cli');
+    expect(html.split(REPORT_WAITLIST)).toHaveLength(3); // href + link text, nothing else
+    // CSP and referrer policy unchanged, and declared exactly once.
+    expect(html).toContain(`<meta http-equiv="Content-Security-Policy" content="${CSP}">`);
+    expect(html.match(/Content-Security-Policy/g)).toHaveLength(1);
+    expect(html).toContain('<meta name="referrer" content="no-referrer">');
+    expect(html).not.toMatch(/connect-src|img-src https|prefetch|preconnect|prerender/i);
+    // Still nothing that loads from the network.
+    expect(html).not.toMatch(/<(link|img|iframe|object|embed|audio|video|source)\b/i);
+    expect(html).not.toMatch(/<script[^>]+src=/i);
+    expect(html).not.toMatch(/url\(\s*['"]?https?:/i);
+    expect(html).not.toMatch(/@import/i);
+    expect(html).not.toMatch(/hogpost/i);
+  });
+
+  it('--no-footer leaves the line out of both the terminal summary and the HTML report', async () => {
+    expect(parseCliArgs(['demo']).footer).toBe(true);
+    expect(parseCliArgs(['demo', '--no-footer']).footer).toBe(false);
+    const { html, out } = await runHtml(['--no-footer']);
+    for (const text of [html, out]) {
+      expect(text).not.toContain('marianoventures');
+      expect(text).not.toContain(WAITLIST_SENTENCE);
+    }
+    expect(out).toContain('Estimates only.');
+    expect(html).toContain('This file loads nothing from the network.</p>\n</footer>');
+    expect(html).toContain(`<meta http-equiv="Content-Security-Policy" content="${CSP}">`);
+  });
+
+  it('keeps the line out of --json, also when an HTML report is written alongside', async () => {
+    const t = io();
+    expect(await main(['demo', '--json'], t.io)).toBe(0);
+    expect(t.out()).not.toContain('marianoventures');
+    expect(t.out()).not.toContain('waitlist');
+    expect(() => JSON.parse(t.out()) as unknown).not.toThrow();
+    const both = await runHtml(['--json']);
+    expect(both.out).not.toContain('marianoventures');
+    expect(both.err).not.toContain('marianoventures');
+    expect(both.html).toContain(`<a href="${REPORT_WAITLIST}">`);
+  });
+
+  it('keeps the line out of --help, --version and --print-queries', async () => {
+    for (const args of [['--help'], ['--version'], ['--print-queries']]) {
+      const t = io();
+      expect(await main(args, t.io)).toBe(0);
+      expect(t.out() + t.err()).not.toContain('frumo.marianoventures.com');
+      expect(t.out() + t.err()).not.toContain(WAITLIST_SENTENCE);
+    }
+    const help = io();
+    await main(['--help'], help.io);
+    expect(help.out()).toMatch(/^ {2}--no-footer {16}\S/m);
+  });
+
+  it('makes no network request for it (no fetch from the demo, terminal or HTML)', async () => {
+    const fetchSpy = vi.fn(() => Promise.reject(new Error('frumo must not phone home')));
+    vi.stubGlobal('fetch', fetchSpy);
+    try {
+      expect(await main(['demo', '--quiet'], io().io)).toBe(0);
+      await runHtml(['--quiet']);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

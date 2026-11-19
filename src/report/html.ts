@@ -6,6 +6,7 @@
 import type { AuditResult, Driver, EvidenceTable, FixResult } from '../analysis/model.js';
 import { PRODUCT_KEYS } from '../pricing/types.js';
 import { count, exact, minusPct, totalText, unitPrice, usd, visibleBillLines } from './format.js';
+import { WAITLIST_TEXT, waitlistUrl } from './waitlist.js';
 
 export function escapeHtml(value: string | number): string {
   return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -208,8 +209,16 @@ function fixCard(fix: FixResult, index: number): string {
 </article>`;
 }
 
-export function renderHtml(result: AuditResult): string {
+export interface HtmlOptions {
+  /** End the footer with the waitlist link (default true; the CLI turns it off with --no-footer). */
+  footer?: boolean;
+}
+
+export function renderHtml(result: AuditResult, options: HtmlOptions = {}): string {
   snippetId = 0;
+  // A plain user-clicked link: no target, no prefetch, nothing loaded. The CSP stays default-src 'none'.
+  const waitlist = waitlistUrl('report');
+  const waitlistLine = options.footer === false ? '' : `\n  <p>${e(WAITLIST_TEXT)} <a href="${e(waitlist)}">${e(waitlist)}</a></p>`;
   const i = result.input;
   const s = result.savings;
   const title = i.sourceKind === 'demo' ? `Demo: ${i.label ?? 'fictional company'}` : (i.projectName ?? i.label ?? 'PostHog bill audit');
@@ -337,7 +346,7 @@ ${result.pricing.table.notes.length > 0 ? `<ul class="list small">${result.prici
 
 <footer>
   <p>${e(result.disclaimer)}</p>
-  <p>Generated locally by frumo ${e(result.tool.version)} (MIT licensed). This file loads nothing from the network.</p>
+  <p>Generated locally by frumo ${e(result.tool.version)} (MIT licensed). This file loads nothing from the network.</p>${waitlistLine}
 </footer>
 </div></main>
 <script>${SCRIPT}</script>

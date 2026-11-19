@@ -7,7 +7,7 @@ A free, open-source, read-only CLI that runs on your own machine.
 > "PostHog" is used only to describe compatibility. frumo is an independent project.
 
 ```text
-$ npx frumo demo
+$ npx frumo-cli demo
 
 ESTIMATED MONTHLY BILL  whole organization
   Product analytics events                                  9.02M events        $291
@@ -77,12 +77,13 @@ The demo data is a **fictional** company ("Tidebrook", hosts under the reserved 
 Node.js 18.18 or newer. No account needed for the demo:
 
 ```sh
-npx frumo demo                          # terminal summary
-npx frumo demo --html demo-report.html  # self-contained HTML report
-npx frumo demo --json > report.json     # machine-readable
+npx frumo-cli demo                          # terminal summary
+npx frumo-cli demo --html report.html       # self-contained HTML report
+npx frumo-cli demo --json > report.json     # machine-readable
+# or: npm i -g frumo-cli   then   frumo demo
 ```
 
-`frumo` is not on npm yet. From a clone:
+`frumo-cli` is not on npm yet. From a clone:
 
 ```sh
 npm install
@@ -134,10 +135,10 @@ read -rs FRUMO_API_KEY && export FRUMO_API_KEY   # paste, press Enter (nothing i
 ### 3. Run it
 
 ```sh
-npx frumo --project 12345                                  # US Cloud (default host https://us.posthog.com)
-npx frumo --project 12345 --host https://eu.posthog.com    # EU Cloud
-npx frumo --project 12345 --host https://posthog.example.internal   # self-hosted
-npx frumo --project 12345 --html report.html --save-snapshot snapshot.json
+npx frumo-cli --project 12345                                  # US Cloud (default host https://us.posthog.com)
+npx frumo-cli --project 12345 --host https://eu.posthog.com    # EU Cloud
+npx frumo-cli --project 12345 --host https://posthog.example.internal   # self-hosted
+npx frumo-cli --project 12345 --html report.html --save-snapshot snapshot.json
 ```
 
 `--project` is the numeric ID from **Project settings**. Pasting the ingestion host (`us.i.posthog.com`, `eu.i.posthog.com`) is fine: it is mapped to the API host.
@@ -166,8 +167,8 @@ npx frumo --project 12345 --html report.html --save-snapshot snapshot.json
 `--save-snapshot snapshot.json` stores exactly what live mode collected (never the key). Re-run the audit any time, or on another machine, with:
 
 ```sh
-npx frumo --from snapshot.json --html report.html
-npx frumo demo --save-snapshot template.json   # a complete example to edit by hand
+npx frumo-cli --from snapshot.json --html report.html
+npx frumo-cli demo --save-snapshot template.json   # a complete example to edit by hand
 ```
 
 The format is `frumo.snapshot/v1`, defined and validated in [`src/snapshot.ts`](src/snapshot.ts). Snapshots saved before the rename (`hogpost.snapshot/v1`) are the same format and still load. Every section except `period` is optional; analyses without their data are listed as "not analyzed". All counts cover `period.days` days. An abbreviated example:
@@ -280,7 +281,7 @@ If a price can't be verified, its tiers are `null`: frumo then shows volumes wit
 ### Pricing overrides (custom contracts)
 
 ```sh
-npx frumo --project 12345 --pricing our-contract.json
+npx frumo-cli --project 12345 --pricing our-contract.json
 ```
 
 ```json
@@ -301,6 +302,7 @@ Products you don't list keep public prices. Product keys: `product_analytics`, `
 ## Privacy and security
 
 - **Runs locally.** The only network peer is the PostHog host you choose (live mode). Demo and offline modes make no network requests. There is no telemetry, no analytics and no update check.
+- **The waitlist line.** The terminal summary and the HTML report end with one plain-text line, "Found this useful? Join the frumo waitlist", and a link (`?ref=cli` or `?ref=report`). frumo never requests that URL, opens a browser or loads anything for it; nothing is sent unless you click the link yourself. `--no-footer` leaves it out, and `--json` never includes it.
 - **Read-only.** Only `GET`s and the hard-coded HogQL `SELECT`s above. Write methods are refused in code and in tests.
 - **Your key** is read only from `FRUMO_API_KEY` (or the deprecated `HOGPOST_API_KEY` when that is unset), kept in a wrapper that prints as `[REDACTED]`, sent only in the `Authorization` header over HTTPS (plain HTTP only for localhost or with `--allow-http`), never logged, never written to disk, and redacted from every error message. Redirects are not followed, so the key can't be forwarded to another host.
 - **Snapshots and reports** contain aggregated counts, hostnames, URL paths, user-agent strings, element classes/texts and flag keys, but no person data or credentials. Review them before sharing.
@@ -332,6 +334,7 @@ Output
   --no-color / --color       Force colors off/on (NO_COLOR is respected)
   -q, --quiet                No progress output
   --verbose                  Log each API request (method, path, status; never headers)
+  --no-footer                Leave out the waitlist link at the end of the summary and HTML report
 
 Estimates
   --pricing <file>           Your own prices (custom contract), JSON; see README "Pricing overrides"

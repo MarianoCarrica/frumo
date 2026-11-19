@@ -1,11 +1,14 @@
 import type { AuditResult, FixResult } from '../analysis/model.js';
 import { count, minusPct, totalText, usd, visibleBillLines } from './format.js';
+import { WAITLIST_TEXT, waitlistUrl } from './waitlist.js';
 
 export interface TerminalOptions {
   color: boolean;
   width?: number;
   /** Print every snippet (default: snippets for the top fixes only). */
   full?: boolean;
+  /** End with the waitlist link (default true; the CLI turns it off with --no-footer). */
+  footer?: boolean;
 }
 
 interface Paint {
@@ -154,6 +157,8 @@ export function renderTerminal(result: AuditResult, options: TerminalOptions): s
   }
   out.push('');
   out.push(...wrapText(result.disclaimer, width, '').map((l) => p.dim(l)));
+  // One unwrapped line so the URL is never split; terminals soft-wrap it if needed.
+  if (options.footer !== false) out.push('', p.dim(`${WAITLIST_TEXT} ${waitlistUrl('cli')}`));
   return `${out.join('\n')}\n`;
 }
 

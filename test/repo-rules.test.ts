@@ -103,12 +103,36 @@ describe('repository rules', () => {
     expect(collect, 'collect.ts must go through the read-only client, never fetch() directly').not.toMatch(/\bfetch\(/);
   });
 
-  it('keeps package metadata as required (name, licence, no repository yet, version in sync)', () => {
+  it('keeps the waitlist URL in src/report/waitlist.ts only', () => {
+    const offenders = files.filter((f) => f.path !== join('src', 'report', 'waitlist.ts') && /frumo\.marianoventures\.com/i.test(f.text)).map((f) => f.path);
+    expect(offenders, 'Import WAITLIST_URL or waitlistUrl() from src/report/waitlist.ts instead of copying the waitlist URL').toEqual([]);
+  });
+
+  it('makes network requests only from the live PostHog client (no telemetry, no browser opening)', () => {
+    const client = join('src', 'sources', 'live', 'client.ts');
+    const netModule = /from\s+['"](?:node:)?(?:http|https|http2|net|tls|dgram|dns|child_process)['"]|import\(\s*['"](?:node:)?(?:http|https|http2|net|tls|dgram|dns|child_process)['"]/;
+    const problems: string[] = [];
+    for (const f of files) {
+      if (netModule.test(f.text)) problems.push(`${f.path}: imports a network or process module`);
+      if (f.path !== client && /\bfetch\s*\(|\b(?:globalThis|window|global)\.fetch\b|\bXMLHttpRequest\b|\bsendBeacon\b/.test(codeOnly(f.text))) {
+        problems.push(`${f.path}: calls fetch`);
+      }
+    }
+    expect(
+      problems,
+      'frumo talks only to the PostHog host the user chose, through PostHogReadOnlyClient in src/sources/live/client.ts. Print a link instead of requesting a URL or opening a browser.',
+    ).toEqual([]);
+  });
+
+  it('keeps package metadata as required (name, licence, repository, version in sync)', () => {
     const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as Record<string, unknown>;
-    expect(pkg.name).toBe('frumo');
+    expect(pkg.name).toBe('frumo-cli');
     expect(pkg.version).toBe(VERSION);
     expect(pkg.license).toBe('MIT');
-    expect(pkg.repository).toBeUndefined();
+    expect(pkg.repository).toEqual({ type: 'git', url: 'git+https://github.com/MarianoCarrica/frumo.git' });
+    expect(pkg.homepage).toBe('https://github.com/MarianoCarrica/frumo#readme');
+    expect(pkg.bugs).toEqual({ url: 'https://github.com/MarianoCarrica/frumo/issues' });
+    expect(pkg.publishConfig).toEqual({ access: 'public' });
     expect(pkg.bin).toEqual({ frumo: 'dist/cli.js' });
     expect(String(pkg.name), "PostHog's terms bar third-party apps from using \"PostHog\" in their name").not.toMatch(/posthog/i);
     expect((pkg.engines as Record<string, string>).node).toBe('>=18.18');
