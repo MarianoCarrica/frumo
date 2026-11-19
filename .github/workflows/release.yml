@@ -1,0 +1,40 @@
+# Stage frumo-cli on npm with trusted publishing (OIDC).
+# A maintainer must later approve the staged package with 2FA.
+# This workflow never runs `npm publish` or any dist-tag command, and never
+# sets NODE_AUTH_TOKEN: npm exchanges the OIDC id-token for a short-lived token.
+#
+# npm stage requires npm 11.15.0 or later and Node 22.14 or later.
+# The trusted publisher on npm is bound to this filename: do not rename it.
+name: release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Install a recent npm (npm stage needs 11.15.0 or later)
+        run: npm i -g npm@latest
+      - name: Confirm npm stage is available
+        run: |
+          npm --version
+          npm stage --help
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm stage publish
