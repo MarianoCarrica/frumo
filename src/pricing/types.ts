@@ -3,7 +3,7 @@
  * `src/pricing/public-pricing.ts` (enforced by test/repo-rules.test.ts).
  */
 
-/** Products HogPost can put a dollar figure on. */
+/** Products frumo can put a dollar figure on. */
 export const PRODUCT_KEYS = [
   'product_analytics',
   'identified_events',
@@ -42,7 +42,7 @@ export interface ProductPricing {
   readonly freeAllowance: number;
   /**
    * Graduated tiers, or null when the price could not be verified.
-   * A null price means "no dollar estimate": HogPost reports volumes only and says so.
+   * A null price means "no dollar estimate": frumo reports volumes only and says so.
    */
   readonly tiers: readonly PriceTier[] | null;
   /** Plan identifier the numbers were read from, when known. */

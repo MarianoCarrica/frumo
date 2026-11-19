@@ -13,7 +13,7 @@ import { NOW, noSleep } from './helpers.js';
 const KEY = 'phx_CLIKEY0123456789abcdefghijklmnopqrstuvw';
 /** Start of an ANSI escape sequence (ESC + "["). */
 const ANSI = `${String.fromCharCode(27)}[`;
-const dir = mkdtempSync(join(tmpdir(), 'hogpost-test-'));
+const dir = mkdtempSync(join(tmpdir(), 'frumo-test-'));
 
 function io(env: Record<string, string> = {}, fetchImpl?: typeof fetch) {
   const out: string[] = [];
@@ -59,7 +59,8 @@ describe('CLI end to end', () => {
     const t = io();
     expect(await main(['demo', '--json'], t.io)).toBe(0);
     const result = JSON.parse(t.out()) as AuditResult;
-    expect(result.schema).toBe('hogpost.report/v1');
+    expect(result.schema).toBe('frumo.report/v1');
+    expect(result.tool.name).toBe('frumo');
     expect(result.generatedAt).toBe(NOW.toISOString());
     expect(result.costs.totalUsd).toBeCloseTo(1568, 0);
     expect(result.fixes.length).toBeGreaterThan(10);
@@ -81,8 +82,9 @@ describe('CLI end to end', () => {
     expect(html).not.toMatch(/@import/i);
     for (const href of html.match(/href="[^"]+"/g) ?? []) expect(href).toMatch(/^href="(#|https:\/\/posthog\.com\/|https:\/\/us\.posthog\.com\/)/);
     expect(html).toContain('Unofficial · not affiliated with PostHog Inc.');
-    expect(html).toContain('<title>HogPost · Demo: Tidebrook (fictional B2B SaaS)</title>');
-    expect(html).toMatch(/<h1[^>]*>HogPost · Demo: Tidebrook/);
+    expect(html).toContain('<title>frumo · Demo: Tidebrook (fictional B2B SaaS)</title>');
+    expect(html).toMatch(/<h1[^>]*>frumo · Demo: Tidebrook/);
+    expect(html).not.toMatch(/hogpost/i);
     expect(html).toContain('person_profiles');
     expect(t.out()).toContain(`HTML report written to ${file}`);
   });
@@ -141,7 +143,7 @@ describe('CLI end to end', () => {
   it('runs live against a (fake) PostHog without ever exposing the key', async () => {
     const fake = fakePostHog();
     const snapPath = join(dir, 'live-snapshot.json');
-    const t = io({ HOGPOST_API_KEY: KEY }, fake.fetch);
+    const t = io({ FRUMO_API_KEY: KEY }, fake.fetch);
     const code = await main(['--project', PROJECT, '--verbose', '--save-snapshot', snapPath, '--html', join(dir, 'live.html')], t.io);
     expect(t.err()).not.toContain(KEY);
     expect(code).toBe(0);
@@ -155,7 +157,7 @@ describe('CLI end to end', () => {
 
   it('redacts the key from API errors', async () => {
     const leaky = () => Promise.resolve(new Response(JSON.stringify({ detail: `bad key ${KEY}` }), { status: 401 }));
-    const t = io({ HOGPOST_API_KEY: KEY }, leaky);
+    const t = io({ FRUMO_API_KEY: KEY }, leaky);
     expect(await main(['--project', PROJECT], t.io)).toBe(1);
     expect(t.err()).toMatch(/401/);
     expect(t.err()).not.toContain(KEY);
@@ -164,11 +166,83 @@ describe('CLI end to end', () => {
   it('explains how to provide the key and refuses it as an argument', async () => {
     const missing = io();
     expect(await main(['--project', '1'], missing.io)).toBe(2);
-    expect(missing.err()).toMatch(/HOGPOST_API_KEY/);
+    expect(missing.err()).toContain('Live mode needs a PostHog personal API key in FRUMO_API_KEY');
+    expect(missing.err()).toContain('read -rs FRUMO_API_KEY && export FRUMO_API_KEY');
+    expect(missing.err()).toContain('Try "frumo demo"');
+    expect(missing.err()).toMatch(/^frumo: /);
+    const blanks: Array<Record<string, string>> = [{ FRUMO_API_KEY: '' }, { FRUMO_API_KEY: '  ', HOGPOST_API_KEY: ' ' }];
+    for (const blank of blanks) {
+      const empty = io(blank);
+      expect(await main(['--project', '1'], empty.io)).toBe(2);
+      expect(empty.err()).toContain('API key in FRUMO_API_KEY');
+    }
     const asArg = io();
     expect(await main(['--project', '1', '--api-key', KEY], asArg.io)).toBe(2);
     expect(asArg.err()).toMatch(/shell history/);
     expect(asArg.err()).not.toContain(KEY);
+  });
+
+  describe('API key variable', () => {
+    const OLD_KEY = 'phx_OLDKEY0123456789abcdefghijklmnopqrstuvw';
+    const sentKeys = (calls: ReturnType<typeof fakePostHog>['calls']) => new Set(calls.map((c) => c.headers.authorization));
+
+    it('runs live with only FRUMO_API_KEY set', async () => {
+      const fake = fakePostHog();
+      const t = io({ FRUMO_API_KEY: KEY }, fake.fetch);
+      expect(await main(['--project', PROJECT, '--json'], t.io)).toBe(0);
+      expect(sentKeys(fake.calls)).toEqual(new Set([`Bearer ${KEY}`]));
+      expect(fake.calls.every((c) => /^frumo\//.test(c.headers['user-agent'] ?? ''))).toBe(true);
+      expect(t.err()).not.toMatch(/deprecated/);
+      expect((JSON.parse(t.out()) as AuditResult).schema).toBe('frumo.report/v1');
+    });
+
+    it('still runs live with only the deprecated HOGPOST_API_KEY set, and says to rename it', async () => {
+      const fake = fakePostHog();
+      const t = io({ HOGPOST_API_KEY: OLD_KEY }, fake.fetch);
+      expect(await main(['--project', PROJECT, '--json'], t.io)).toBe(0);
+      expect(fake.calls.length).toBeGreaterThan(0);
+      expect(sentKeys(fake.calls)).toEqual(new Set([`Bearer ${OLD_KEY}`]));
+      expect(t.err()).toContain('Using the key from HOGPOST_API_KEY, which is deprecated: rename it to FRUMO_API_KEY.');
+      expect(t.err()).not.toContain(OLD_KEY);
+      const quiet = io({ HOGPOST_API_KEY: OLD_KEY }, fakePostHog().fetch);
+      expect(await main(['--project', PROJECT, '--json', '--quiet'], quiet.io)).toBe(0);
+      expect(quiet.err()).toBe('');
+    });
+
+    it('prefers FRUMO_API_KEY when both are set, and falls back when it is empty', async () => {
+      const both = fakePostHog();
+      const t = io({ FRUMO_API_KEY: KEY, HOGPOST_API_KEY: OLD_KEY }, both.fetch);
+      expect(await main(['--project', PROJECT, '--json'], t.io)).toBe(0);
+      expect(sentKeys(both.calls)).toEqual(new Set([`Bearer ${KEY}`]));
+      expect(t.err()).not.toMatch(/deprecated/);
+
+      const blank = fakePostHog();
+      expect(await main(['--project', PROJECT, '--json', '--quiet'], io({ FRUMO_API_KEY: ' ', HOGPOST_API_KEY: OLD_KEY }, blank.fetch).io)).toBe(0);
+      expect(sentKeys(blank.calls)).toEqual(new Set([`Bearer ${OLD_KEY}`]));
+    });
+
+    it('names the variable the rejected key came from', async () => {
+      const reject = () => Promise.resolve(new Response('{}', { status: 401 }));
+      const current = io({ FRUMO_API_KEY: KEY }, reject);
+      expect(await main(['--project', PROJECT], current.io)).toBe(1);
+      expect(current.err()).toContain('rejected the API key in FRUMO_API_KEY');
+      const legacy = io({ HOGPOST_API_KEY: OLD_KEY }, reject);
+      expect(await main(['--project', PROJECT], legacy.io)).toBe(1);
+      expect(legacy.err()).toContain('rejected the API key in HOGPOST_API_KEY');
+    });
+  });
+
+  it('reads snapshots saved before the rename (hogpost.snapshot/v1)', async () => {
+    const current = join(dir, 'current-schema.json');
+    const legacy = join(dir, 'legacy-schema.json');
+    const a = io();
+    expect(await main(['demo', '--json', '--quiet', '--save-snapshot', current], a.io)).toBe(0);
+    const saved = JSON.parse(readFileSync(current, 'utf8')) as { schema: string };
+    expect(saved.schema).toBe('frumo.snapshot/v1');
+    writeFileSync(legacy, JSON.stringify({ ...saved, schema: 'hogpost.snapshot/v1' }));
+    const b = io();
+    expect(await main(['--from', legacy, '--json'], b.io)).toBe(0);
+    expect((JSON.parse(b.out()) as AuditResult).costs.totalUsd).toBeCloseTo((JSON.parse(a.out()) as AuditResult).costs.totalUsd, 6);
   });
 
   it('prints the queries, help and version', async () => {
@@ -179,7 +253,12 @@ describe('CLI end to end', () => {
     expect(q.out()).toContain('INTERVAL 14 DAY');
     const h = io();
     expect(await main(['--help'], h.io)).toBe(0);
-    expect(h.out()).toContain('HOGPOST_API_KEY');
+    expect(h.out()).toContain('FRUMO_API_KEY              Personal API key');
+    expect(h.out()).toContain('HOGPOST_API_KEY            Deprecated old name, still read when FRUMO_API_KEY is unset');
+    expect(h.out()).toMatch(/^frumo: /);
+    expect(h.out()).toContain('  frumo demo ');
+    expect(h.out()).toContain('npx frumo --project 12345');
+    expect(h.out()).not.toMatch(/hogpost(?!_API_KEY)/i);
     expect(h.out()).toContain('not affiliated with or endorsed by PostHog Inc.');
     const v = io();
     expect(await main(['--version'], v.io)).toBe(0);
@@ -191,7 +270,7 @@ describe('CLI end to end', () => {
     expect(await main(['--from', join(dir, 'missing.json')], t.io)).toBe(2);
     expect(t.err()).toMatch(/Can't read --from file/);
     const bad = join(dir, 'bad.json');
-    writeFileSync(bad, '{"schema":"hogpost.snapshot/v1","period":{"days":-1}}');
+    writeFileSync(bad, '{"schema":"frumo.snapshot/v1","period":{"days":-1}}');
     const v = io();
     expect(await main(['--from', bad], v.io)).toBe(1);
     expect(v.err()).toMatch(/period\.days/);
@@ -199,7 +278,7 @@ describe('CLI end to end', () => {
 });
 
 describe('piping output', () => {
-  it('exits quietly when the reader closes the pipe (hogpost demo | head) and rethrows other errors', () => {
+  it('exits quietly when the reader closes the pipe (frumo demo | head) and rethrows other errors', () => {
     const stream = new EventEmitter();
     const codes: number[] = [];
     exitOnBrokenPipe(stream, (code) => codes.push(code));

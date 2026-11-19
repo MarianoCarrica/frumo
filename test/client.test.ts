@@ -41,7 +41,7 @@ describe('read-only client', () => {
     expect(call.headers.authorization).toBe(`Bearer ${KEY}`);
     expect(call.redirect).toBe('manual');
     expect(call.url.toString()).not.toContain(KEY);
-    expect(call.headers['user-agent']).toMatch(/^hogpost\/test/);
+    expect(call.headers['user-agent']).toMatch(/^frumo\/test/);
   });
 
   it('posts only registered HogQL SELECTs to the query endpoint', async () => {
@@ -54,7 +54,7 @@ describe('read-only client', () => {
     const body = JSON.parse(call.body ?? '{}') as { query: { kind: string; query: string }; name: string };
     expect(body.query.kind).toBe('HogQLQuery');
     expect(body.query.query).toBe(query().sql);
-    expect(body.name).toBe('hogpost_totals');
+    expect(body.name).toBe('frumo_totals');
   });
 
   it('refuses forged queries, other methods, other paths and other hosts before any request', async () => {
@@ -125,6 +125,18 @@ describe('read-only client', () => {
     expect(e401).toBeInstanceOf(ApiError);
     expect((e401 as ApiError).isAuthFailure).toBe(true);
     expect((e401 as Error).message).not.toContain(KEY);
+    expect((e401 as Error).message).toContain('API key in FRUMO_API_KEY');
+
+    const legacy = new PostHogReadOnlyClient({
+      origin: ORIGIN,
+      apiKey: new Secret(KEY),
+      apiKeyVariable: 'HOGPOST_API_KEY',
+      toolVersion: 'test',
+      fetchImpl: mockFetch(() => json({ detail: 'nope' }, 401)).fetch,
+      minIntervalMs: 0,
+    });
+    const legacy401 = (await legacy.get('/api/billing/').catch((e: unknown) => e)) as Error;
+    expect(legacy401.message, 'name the variable the key actually came from').toContain('API key in HOGPOST_API_KEY');
 
     const { client: c403 } = client(() => json({ type: 'authentication_error', code: 'permission_denied', detail: `scope missing for ${KEY}` }, 403));
     const e403 = (await c403.get('/api/billing/', {}, { scope: 'billing:read' }).catch((e: unknown) => e)) as Error;

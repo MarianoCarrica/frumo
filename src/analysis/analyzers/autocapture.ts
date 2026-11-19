@@ -11,7 +11,7 @@ import type { AutocaptureElementRow } from '../../snapshot.js';
 const CONVERSION_TEXT =
   /sign ?up|log ?in|sign ?in|buy|purchase|checkout|subscribe|upgrade|trial|book|demo|contact|download|submit|save|create|invite|pay|get started|register|add to cart|start/i;
 
-/** A CSS class name HogPost is willing to put in a selector. */
+/** A CSS class name frumo is willing to put in a selector. */
 const SAFE_CLASS = /^-?[_a-zA-Z][_a-zA-Z0-9-]*$/;
 
 const MIN_CLICKS_PER_SESSION = 4;

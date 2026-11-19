@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { isBillableEvent, isBotUserAgent } from '../src/posthog-facts.js';
 import { SNAPSHOT_SCHEMA, parseSnapshot } from '../src/snapshot.js';
@@ -19,9 +20,20 @@ describe('snapshot format', () => {
     expect(parsed.source.kind).toBe('file');
   });
 
-  it('rejects files that are not HogPost snapshots', () => {
+  it('rejects files that are not frumo snapshots', () => {
     expect(() => parseSnapshot({ hello: 'world' })).toThrow(/schema/);
     expect(() => parseSnapshot([])).toThrow(ValidationError);
+    for (const schema of ['frumo.snapshot/v2', 'hogpost.snapshot/v2', 'frumo.report/v1', 42]) {
+      expect(() => parseSnapshot({ schema, period: { days: 7 } }), String(schema)).toThrow(/expected "frumo\.snapshot\/v1"/);
+    }
+  });
+
+  it('writes frumo.snapshot/v1 and still reads snapshots saved as hogpost.snapshot/v1', async () => {
+    expect(SNAPSHOT_SCHEMA).toBe('frumo.snapshot/v1');
+    const current = JSON.parse(JSON.stringify(await demo())) as Record<string, unknown>;
+    const legacy = parseSnapshot({ ...current, schema: 'hogpost.snapshot/v1' });
+    expect(legacy.schema, 'legacy snapshots are upgraded to the current schema id').toBe(SNAPSHOT_SCHEMA);
+    expect(legacy).toEqual(parseSnapshot(current));
   });
 
   it('reports every invalid field with its path', () => {
@@ -52,6 +64,11 @@ describe('snapshot format', () => {
 });
 
 describe('demo fixture', () => {
+  it('is stored with the current schema id (regenerate with npm run fixture:demo)', () => {
+    const raw = JSON.parse(readFileSync(new URL('../fixtures/demo-snapshot.json', import.meta.url), 'utf8')) as { schema?: unknown };
+    expect(raw.schema).toBe(SNAPSHOT_SCHEMA);
+  });
+
   it('is clearly fictional', async () => {
     const snap = await demo();
     expect(snap.source.fictional).toBe(true);

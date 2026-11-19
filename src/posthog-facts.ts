@@ -90,7 +90,7 @@ export function botToken(userAgent: string): string {
   return named ? named[0] : userAgent;
 }
 
-/** Docs pages HogPost links to (all checked 2026-11-18). */
+/** Docs pages frumo links to (all checked 2026-11-18). */
 export const DOCS = {
   jsConfig: 'https://posthog.com/docs/libraries/js/config',
   autocapture: 'https://posthog.com/docs/product-analytics/autocapture',
@@ -113,5 +113,5 @@ export const DOCS = {
 /** Local-evaluation polling: one poll per 30s per server instance by default (PostHog docs). */
 export const LOCAL_EVAL_POLLS_PER_INSTANCE_PER_MONTH = 2 * 60 * 24 * 30; // 86,400
 
-/** Days a "month" means when HogPost normalizes counts. */
+/** Days a "month" means when frumo normalizes counts. */
 export const DAYS_PER_MONTH = 30;

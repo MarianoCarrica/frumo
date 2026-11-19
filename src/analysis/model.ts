@@ -120,8 +120,8 @@ export interface Finding {
 }
 
 export interface AuditResult {
-  schema: 'hogpost.report/v1';
-  tool: { name: 'hogpost'; version: string };
+  schema: 'frumo.report/v1';
+  tool: { name: 'frumo'; version: string };
   generatedAt: string;
   input: {
     sourceKind: SourceKind;

@@ -1,5 +1,5 @@
 /**
- * HogPost as a library. Unofficial; not affiliated with or endorsed by PostHog Inc.
+ * frumo as a library. Unofficial; not affiliated with or endorsed by PostHog Inc.
  * The CLI (src/cli.ts) is a thin wrapper around these.
  */
 export { runAnalysis, DISCLAIMER, niceLimit } from './analysis/index.js';
