@@ -28,6 +28,8 @@ export interface CliArgs {
   full: boolean;
   allowHttp: boolean;
   planPricing: boolean;
+  /** false with --no-footer: leave the waitlist link out of the terminal summary and HTML report. */
+  footer: boolean;
 }
 
 export { API_KEY_ENV } from './api-key.js';
@@ -62,6 +64,7 @@ Output
   --no-color / --color       Force colors off/on (NO_COLOR is respected)
   -q, --quiet                No progress output
   --verbose                  Log each API request (method, path, status; never headers)
+  --no-footer                Leave out the waitlist link at the end of the summary and HTML report
 
 Estimates
   --pricing <file>           Your own prices (custom contract), JSON; see README "Pricing overrides"
@@ -164,6 +167,7 @@ export function parseCliArgs(argv: readonly string[]): CliArgs {
     full: values.full === true,
     allowHttp: values['allow-http'] === true,
     planPricing: values['public-pricing'] !== true,
+    footer: values['no-footer'] !== true,
   };
 }
 
@@ -189,6 +193,7 @@ function parse(argv: readonly string[]) {
       'server-instances': { type: 'string' },
       color: { type: 'boolean' },
       'no-color': { type: 'boolean' },
+      'no-footer': { type: 'boolean' },
       quiet: { type: 'boolean', short: 'q' },
       verbose: { type: 'boolean' },
       full: { type: 'boolean' },

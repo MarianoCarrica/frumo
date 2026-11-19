@@ -301,6 +301,7 @@ Products you don't list keep public prices. Product keys: `product_analytics`, `
 ## Privacy and security
 
 - **Runs locally.** The only network peer is the PostHog host you choose (live mode). Demo and offline modes make no network requests. There is no telemetry, no analytics and no update check.
+- **The waitlist line.** The terminal summary and the HTML report end with one plain-text line, "Found this useful? Join the frumo waitlist", and a link (`?ref=cli` or `?ref=report`). frumo never requests that URL, opens a browser or loads anything for it; nothing is sent unless you click the link yourself. `--no-footer` leaves it out, and `--json` never includes it.
 - **Read-only.** Only `GET`s and the hard-coded HogQL `SELECT`s above. Write methods are refused in code and in tests.
 - **Your key** is read only from `FRUMO_API_KEY` (or the deprecated `HOGPOST_API_KEY` when that is unset), kept in a wrapper that prints as `[REDACTED]`, sent only in the `Authorization` header over HTTPS (plain HTTP only for localhost or with `--allow-http`), never logged, never written to disk, and redacted from every error message. Redirects are not followed, so the key can't be forwarded to another host.
 - **Snapshots and reports** contain aggregated counts, hostnames, URL paths, user-agent strings, element classes/texts and flag keys, but no person data or credentials. Review them before sharing.
@@ -332,6 +333,7 @@ Output
   --no-color / --color       Force colors off/on (NO_COLOR is respected)
   -q, --quiet                No progress output
   --verbose                  Log each API request (method, path, status; never headers)
+  --no-footer                Leave out the waitlist link at the end of the summary and HTML report
 
 Estimates
   --pricing <file>           Your own prices (custom contract), JSON; see README "Pricing overrides"

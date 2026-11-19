@@ -124,10 +124,10 @@ export async function main(argv: readonly string[], io: CliIo): Promise<number> 
       const auto = io.stdoutIsTTY && io.env.NO_COLOR === undefined && io.env.TERM !== 'dumb';
       const forced = io.env.FORCE_COLOR !== undefined && io.env.FORCE_COLOR !== '0';
       const color = args.color ?? (forced || auto);
-      io.stdout(renderTerminal(result, { color, width: io.columns ?? 100, full: args.full }));
+      io.stdout(renderTerminal(result, { color, width: io.columns ?? 100, full: args.full, footer: args.footer }));
     }
     if (args.html) {
-      await writeFile(args.html, renderHtml(result), 'utf8');
+      await writeFile(args.html, renderHtml(result, { footer: args.footer }), 'utf8');
       const message = `HTML report written to ${args.html}\n`;
       if (args.json) io.stderr(message);
       else io.stdout(message);
