@@ -104,7 +104,7 @@ describe('repository rules', () => {
   });
 
   it('keeps the waitlist URL in src/report/waitlist.ts only', () => {
-    const offenders = files.filter((f) => f.path !== join('src', 'report', 'waitlist.ts') && /marianoventures/i.test(f.text)).map((f) => f.path);
+    const offenders = files.filter((f) => f.path !== join('src', 'report', 'waitlist.ts') && /frumo\.marianoventures\.com/i.test(f.text)).map((f) => f.path);
     expect(offenders, 'Import WAITLIST_URL or waitlistUrl() from src/report/waitlist.ts instead of copying the waitlist URL').toEqual([]);
   });
 
@@ -124,12 +124,15 @@ describe('repository rules', () => {
     ).toEqual([]);
   });
 
-  it('keeps package metadata as required (name, licence, no repository yet, version in sync)', () => {
+  it('keeps package metadata as required (name, licence, repository, version in sync)', () => {
     const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as Record<string, unknown>;
-    expect(pkg.name).toBe('frumo');
+    expect(pkg.name).toBe('@marianoventures/frumo');
     expect(pkg.version).toBe(VERSION);
     expect(pkg.license).toBe('MIT');
-    expect(pkg.repository).toBeUndefined();
+    expect(pkg.repository).toEqual({ type: 'git', url: 'git+https://github.com/MarianoCarrica/frumo.git' });
+    expect(pkg.homepage).toBe('https://github.com/MarianoCarrica/frumo#readme');
+    expect(pkg.bugs).toEqual({ url: 'https://github.com/MarianoCarrica/frumo/issues' });
+    expect(pkg.publishConfig).toEqual({ access: 'public' });
     expect(pkg.bin).toEqual({ frumo: 'dist/cli.js' });
     expect(String(pkg.name), "PostHog's terms bar third-party apps from using \"PostHog\" in their name").not.toMatch(/posthog/i);
     expect((pkg.engines as Record<string, string>).node).toBe('>=18.18');

@@ -1,9 +1,20 @@
 {
-  "name": "frumo",
+  "name": "@marianoventures/frumo",
   "version": "0.1.0",
   "description": "Unofficial, read-only CLI that finds what drives your PostHog bill and prints ready-to-paste fixes with dollar estimates. Not affiliated with PostHog Inc.",
   "license": "MIT",
   "author": "Mariano Ventures",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MarianoCarrica/frumo.git"
+  },
+  "homepage": "https://github.com/MarianoCarrica/frumo#readme",
+  "bugs": {
+    "url": "https://github.com/MarianoCarrica/frumo/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "private": false,
   "type": "module",
   "bin": {

@@ -7,7 +7,7 @@ A free, open-source, read-only CLI that runs on your own machine.
 > "PostHog" is used only to describe compatibility. frumo is an independent project.
 
 ```text
-$ npx frumo demo
+$ npx @marianoventures/frumo demo
 
 ESTIMATED MONTHLY BILL  whole organization
   Product analytics events                                  9.02M events        $291
@@ -77,12 +77,12 @@ The demo data is a **fictional** company ("Tidebrook", hosts under the reserved 
 Node.js 18.18 or newer. No account needed for the demo:
 
 ```sh
-npx frumo demo                          # terminal summary
-npx frumo demo --html demo-report.html  # self-contained HTML report
-npx frumo demo --json > report.json     # machine-readable
+npx @marianoventures/frumo demo                          # terminal summary
+npx @marianoventures/frumo demo --html demo-report.html  # self-contained HTML report
+npx @marianoventures/frumo demo --json > report.json     # machine-readable
 ```
 
-`frumo` is not on npm yet. From a clone:
+`@marianoventures/frumo` is not on npm yet. From a clone:
 
 ```sh
 npm install
@@ -134,10 +134,10 @@ read -rs FRUMO_API_KEY && export FRUMO_API_KEY   # paste, press Enter (nothing i
 ### 3. Run it
 
 ```sh
-npx frumo --project 12345                                  # US Cloud (default host https://us.posthog.com)
-npx frumo --project 12345 --host https://eu.posthog.com    # EU Cloud
-npx frumo --project 12345 --host https://posthog.example.internal   # self-hosted
-npx frumo --project 12345 --html report.html --save-snapshot snapshot.json
+npx @marianoventures/frumo --project 12345                                  # US Cloud (default host https://us.posthog.com)
+npx @marianoventures/frumo --project 12345 --host https://eu.posthog.com    # EU Cloud
+npx @marianoventures/frumo --project 12345 --host https://posthog.example.internal   # self-hosted
+npx @marianoventures/frumo --project 12345 --html report.html --save-snapshot snapshot.json
 ```
 
 `--project` is the numeric ID from **Project settings**. Pasting the ingestion host (`us.i.posthog.com`, `eu.i.posthog.com`) is fine: it is mapped to the API host.
@@ -166,8 +166,8 @@ npx frumo --project 12345 --html report.html --save-snapshot snapshot.json
 `--save-snapshot snapshot.json` stores exactly what live mode collected (never the key). Re-run the audit any time, or on another machine, with:
 
 ```sh
-npx frumo --from snapshot.json --html report.html
-npx frumo demo --save-snapshot template.json   # a complete example to edit by hand
+npx @marianoventures/frumo --from snapshot.json --html report.html
+npx @marianoventures/frumo demo --save-snapshot template.json   # a complete example to edit by hand
 ```
 
 The format is `frumo.snapshot/v1`, defined and validated in [`src/snapshot.ts`](src/snapshot.ts). Snapshots saved before the rename (`hogpost.snapshot/v1`) are the same format and still load. Every section except `period` is optional; analyses without their data are listed as "not analyzed". All counts cover `period.days` days. An abbreviated example:
@@ -280,7 +280,7 @@ If a price can't be verified, its tiers are `null`: frumo then shows volumes wit
 ### Pricing overrides (custom contracts)
 
 ```sh
-npx frumo --project 12345 --pricing our-contract.json
+npx @marianoventures/frumo --project 12345 --pricing our-contract.json
 ```
 
 ```json
