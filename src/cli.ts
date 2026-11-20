@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * frumo CLI entry point. Unofficial; not affiliated with PostHog Inc.
- * All work happens locally; in live mode the only network peer is the PostHog host you choose.
+ * All work happens locally; in live mode the only network peer is the PostHog host you choose
+ * (or, for `frumo sentry`, the Sentry host).
  */
 import { readFile, writeFile } from 'node:fs/promises';
 import { realpathSync } from 'node:fs';
@@ -15,6 +16,7 @@ import type { PricingOverride } from './pricing/override.js';
 import { renderHtml } from './report/html.js';
 import { renderJson } from './report/json.js';
 import { renderTerminal } from './report/terminal.js';
+import { runSentry } from './sentry/cli.js';
 import type { Snapshot } from './snapshot.js';
 import { readDemoSnapshot, readInputFile } from './sources/file.js';
 import { PostHogReadOnlyClient } from './sources/live/client.js';
@@ -39,6 +41,7 @@ export interface CliIo {
 
 /** Runs the CLI and returns the exit code (0 ok, 1 failure, 2 usage error). */
 export async function main(argv: readonly string[], io: CliIo): Promise<number> {
+  if (argv[0] === 'sentry') return runSentry(argv.slice(1), io);
   let apiKey: Secret | null = null;
   const secrets = (): Secret[] => (apiKey ? [apiKey] : []);
   let args: CliArgs | null = null;

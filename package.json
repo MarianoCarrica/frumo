@@ -32,6 +32,7 @@
   "files": [
     "dist",
     "fixtures/demo-snapshot.json",
+    "fixtures/sentry-demo-snapshot.json",
     "README.md",
     "LICENSE"
   ],

@@ -69,3 +69,31 @@ export interface PricingTable {
 
 /** Where a product's effective price came from. */
 export type PriceSource = 'public' | 'billing-api' | 'override';
+
+/** Sentry plans frumo can estimate (public pay-as-you-go list prices). */
+export const SENTRY_PLANS = ['team', 'business'] as const;
+export type SentryPlan = (typeof SENTRY_PLANS)[number];
+
+/** Sentry billing categories frumo estimates. Attachments are billed per GB. */
+export const SENTRY_BILLED_CATEGORIES = ['errors', 'spans', 'replays', 'attachments'] as const;
+export type SentryBilledCategory = (typeof SENTRY_BILLED_CATEGORIES)[number];
+
+export interface SentryCategoryPricing {
+  readonly label: string;
+  readonly unit: string;
+  readonly unitPlural: string;
+  /** Monthly volume included with the paid plan (also encoded as a $0 first tier). */
+  readonly included: number;
+  /** Graduated PAYG tiers per plan, in `unit`s. */
+  readonly tiers: Readonly<Record<SentryPlan, readonly PriceTier[]>>;
+}
+
+export interface SentryPricingTable {
+  readonly name: string;
+  readonly sources: readonly string[];
+  /** ISO date the prices were checked. */
+  readonly retrieved: string;
+  readonly currency: 'USD';
+  readonly notes: readonly string[];
+  readonly categories: Readonly<Record<SentryBilledCategory, SentryCategoryPricing>>;
+}

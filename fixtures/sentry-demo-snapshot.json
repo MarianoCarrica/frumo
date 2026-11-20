@@ -1,0 +1,383 @@
+{
+  "schema": "frumo.sentry-snapshot/v1",
+  "generatedAt": "2026-11-20T09:00:00.000Z",
+  "source": {
+    "kind": "demo",
+    "host": null,
+    "toolVersion": "0.1.0",
+    "fictional": true,
+    "label": "Tidebrook (fictional B2B SaaS)"
+  },
+  "org": {
+    "slug": "tidebrook",
+    "name": "Tidebrook (fictional)"
+  },
+  "period": {
+    "days": 30,
+    "start": "2026-10-21T09:00:00.000Z",
+    "end": "2026-11-20T09:00:00.000Z"
+  },
+  "stats": [
+    {
+      "projectId": "4501",
+      "category": "error",
+      "outcome": "accepted",
+      "quantity": 1620000
+    },
+    {
+      "projectId": "4501",
+      "category": "error",
+      "outcome": "filtered",
+      "quantity": 40000
+    },
+    {
+      "projectId": "4501",
+      "category": "error",
+      "outcome": "rate_limited",
+      "quantity": 85000
+    },
+    {
+      "projectId": "4501",
+      "category": "error",
+      "outcome": "client_discard",
+      "quantity": 12000
+    },
+    {
+      "projectId": "4502",
+      "category": "error",
+      "outcome": "accepted",
+      "quantity": 410000
+    },
+    {
+      "projectId": "4503",
+      "category": "error",
+      "outcome": "accepted",
+      "quantity": 260000
+    },
+    {
+      "projectId": "4503",
+      "category": "error",
+      "outcome": "filtered",
+      "quantity": 9000
+    },
+    {
+      "projectId": "4504",
+      "category": "error",
+      "outcome": "accepted",
+      "quantity": 48000
+    },
+    {
+      "projectId": "4505",
+      "category": "error",
+      "outcome": "accepted",
+      "quantity": 12000
+    },
+    {
+      "projectId": "4501",
+      "category": "transaction",
+      "outcome": "accepted",
+      "quantity": 38000000
+    },
+    {
+      "projectId": "4501",
+      "category": "transaction",
+      "outcome": "filtered",
+      "quantity": 1500000
+    },
+    {
+      "projectId": "4502",
+      "category": "transaction",
+      "outcome": "accepted",
+      "quantity": 21000000
+    },
+    {
+      "projectId": "4502",
+      "category": "transaction",
+      "outcome": "rate_limited",
+      "quantity": 2000000
+    },
+    {
+      "projectId": "4503",
+      "category": "transaction",
+      "outcome": "accepted",
+      "quantity": 3500000
+    },
+    {
+      "projectId": "4504",
+      "category": "transaction",
+      "outcome": "accepted",
+      "quantity": 2000000
+    },
+    {
+      "projectId": "4505",
+      "category": "transaction",
+      "outcome": "accepted",
+      "quantity": 900000
+    },
+    {
+      "projectId": "4501",
+      "category": "replay",
+      "outcome": "accepted",
+      "quantity": 9400
+    },
+    {
+      "projectId": "4503",
+      "category": "replay",
+      "outcome": "accepted",
+      "quantity": 600
+    },
+    {
+      "projectId": "4502",
+      "category": "attachment",
+      "outcome": "accepted",
+      "quantity": 2600000000
+    },
+    {
+      "projectId": "4504",
+      "category": "attachment",
+      "outcome": "accepted",
+      "quantity": 1100000000
+    }
+  ],
+  "statsMissing": [],
+  "projects": [
+    {
+      "id": "4501",
+      "slug": "web-app",
+      "name": "Tidebrook web app",
+      "platform": "javascript-react"
+    },
+    {
+      "id": "4502",
+      "slug": "api",
+      "name": "Tidebrook API",
+      "platform": "node-express"
+    },
+    {
+      "id": "4503",
+      "slug": "marketing-site",
+      "name": "www.tidebrook.example",
+      "platform": "javascript-nextjs"
+    },
+    {
+      "id": "4504",
+      "slug": "ios-app",
+      "name": "Tidebrook iOS",
+      "platform": "apple-ios"
+    },
+    {
+      "id": "4505",
+      "slug": "billing-worker",
+      "name": "Billing worker",
+      "platform": "python"
+    }
+  ],
+  "issues": [
+    {
+      "id": "900001",
+      "shortId": "WEB-APP-1A",
+      "title": "ResizeObserver loop completed with undelivered notifications.",
+      "culprit": "app/dashboard",
+      "count": 610000,
+      "status": "ignored",
+      "substatus": "archived_forever",
+      "projectSlug": "web-app",
+      "level": "error"
+    },
+    {
+      "id": "900002",
+      "shortId": "WEB-APP-2F",
+      "title": "TypeError: Cannot read properties of undefined (reading 'getBoundingClientRect')",
+      "culprit": "chrome-extension://kfmoabcdeghijlnpqrstuvwxyzabcdef/content.js",
+      "count": 240000,
+      "status": "unresolved",
+      "substatus": "ongoing",
+      "projectSlug": "web-app",
+      "level": "error"
+    },
+    {
+      "id": "900003",
+      "shortId": "WEB-APP-3C",
+      "title": "ChunkLoadError: Loading chunk 412 failed.",
+      "culprit": "app/reports",
+      "count": 180000,
+      "status": "unresolved",
+      "substatus": "ongoing",
+      "projectSlug": "web-app",
+      "level": "error"
+    },
+    {
+      "id": "900004",
+      "shortId": "API-7",
+      "title": "Error: connect ECONNREFUSED 10.0.3.14:6379",
+      "culprit": "lib/cache in connect",
+      "count": 150000,
+      "status": "unresolved",
+      "substatus": "ongoing",
+      "projectSlug": "api",
+      "level": "error"
+    },
+    {
+      "id": "900005",
+      "shortId": "WEB-APP-4K",
+      "title": "AbortError: The user aborted a request.",
+      "culprit": "app/search",
+      "count": 95000,
+      "status": "ignored",
+      "substatus": "archived_until_escalating",
+      "projectSlug": "web-app",
+      "level": "error"
+    },
+    {
+      "id": "900006",
+      "shortId": "MARKETING-SITE-9",
+      "title": "Non-Error promise rejection captured with value: Timeout",
+      "culprit": "pages/pricing",
+      "count": 70000,
+      "status": "ignored",
+      "substatus": "archived_until_escalating",
+      "projectSlug": "marketing-site",
+      "level": "error"
+    },
+    {
+      "id": "900007",
+      "shortId": "MARKETING-SITE-2",
+      "title": "SyntaxError: Unexpected token '<'",
+      "culprit": "pages/index",
+      "count": 42000,
+      "status": "unresolved",
+      "substatus": "ongoing",
+      "projectSlug": "marketing-site",
+      "level": "error"
+    },
+    {
+      "id": "900008",
+      "shortId": "WEB-APP-5D",
+      "title": "TypeError: Load failed",
+      "culprit": "app/settings",
+      "count": 20000,
+      "status": "resolved",
+      "substatus": null,
+      "projectSlug": "web-app",
+      "level": "error"
+    },
+    {
+      "id": "900009",
+      "shortId": "IOS-APP-3",
+      "title": "NSURLErrorDomain: -1009",
+      "culprit": "NetworkClient.fetch",
+      "count": 18000,
+      "status": "unresolved",
+      "substatus": "ongoing",
+      "projectSlug": "ios-app",
+      "level": "error"
+    },
+    {
+      "id": "900010",
+      "shortId": "BILLING-WORKER-1",
+      "title": "KeyError: 'invoice_id'",
+      "culprit": "billing.jobs.reconcile",
+      "count": 6000,
+      "status": "unresolved",
+      "substatus": "ongoing",
+      "projectSlug": "billing-worker",
+      "level": "error"
+    }
+  ],
+  "projectConfigs": [
+    {
+      "projectSlug": "web-app",
+      "filters": [
+        {
+          "id": "browser-extensions",
+          "active": false
+        },
+        {
+          "id": "web-crawlers",
+          "active": false
+        },
+        {
+          "id": "localhost",
+          "active": true
+        },
+        {
+          "id": "legacy-browsers",
+          "active": false
+        },
+        {
+          "id": "filtered-transaction",
+          "active": true
+        }
+      ],
+      "keys": [
+        {
+          "label": "Default",
+          "isActive": true,
+          "rateLimit": null
+        }
+      ]
+    },
+    {
+      "projectSlug": "api",
+      "filters": [
+        {
+          "id": "browser-extensions",
+          "active": false
+        },
+        {
+          "id": "web-crawlers",
+          "active": false
+        },
+        {
+          "id": "localhost",
+          "active": false
+        },
+        {
+          "id": "filtered-transaction",
+          "active": false
+        }
+      ],
+      "keys": [
+        {
+          "label": "Default",
+          "isActive": true,
+          "rateLimit": {
+            "window": 60,
+            "count": 1000
+          }
+        }
+      ]
+    },
+    {
+      "projectSlug": "marketing-site",
+      "filters": [
+        {
+          "id": "browser-extensions",
+          "active": true
+        },
+        {
+          "id": "web-crawlers",
+          "active": false
+        },
+        {
+          "id": "localhost",
+          "active": false
+        },
+        {
+          "id": "filtered-transaction",
+          "active": true
+        }
+      ],
+      "keys": [
+        {
+          "label": "Default",
+          "isActive": true,
+          "rateLimit": null
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Filters and client keys were checked for the 3 busiest projects (ios-app and billing-worker were not checked)."
+  ]
+}

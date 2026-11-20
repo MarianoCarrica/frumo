@@ -25,7 +25,7 @@
  * Never guess a number: if a price can't be verified, set `tiers: null` and an `unverifiedReason`;
  * frumo then reports volumes without a dollar figure for that product.
  */
-import type { PricingTable } from './types.js';
+import type { PriceTier, PricingTable, SentryPricingTable } from './types.js';
 
 export const PUBLIC_PRICING: PricingTable = {
   name: 'PostHog public pricing',
@@ -149,3 +149,106 @@ export const PUBLIC_PRICING: PricingTable = {
     },
   },
 };
+
+/**
+ * Sentry public pay-as-you-go pricing (used by `frumo sentry`). Kept in this file so every
+ * price in frumo lives in one place (test/repo-rules.test.ts).
+ *
+ * Sources checked 2026-11-20:
+ *   - https://docs.sentry.io/pricing/   (PAYG bands per plan)
+ *   - https://sentry.io/pricing/        (included volume on Team and Business)
+ *
+ * Included each month on Team and Business: 50K errors, 5M spans, 50 replays, 1 GB attachments.
+ * Bands are graduated: each unit is charged at the rate of the band it falls in. Reserved volume,
+ * mid-cycle plan changes and Enterprise contracts are not modelled.
+ */
+/** Sentry replays cost the same on Team and Business. */
+const SENTRY_REPLAY_TIERS: readonly PriceTier[] = [
+  { upTo: 50, unitUsd: 0 },
+  { upTo: 5_000, unitUsd: 0.00375 },
+  { upTo: 100_000, unitUsd: 0.003563 },
+  { upTo: 900_000, unitUsd: 0.003206 },
+  { upTo: 4_500_000, unitUsd: 0.002886 },
+  { upTo: null, unitUsd: 0.002453 },
+];
+
+export const SENTRY_PUBLIC_PRICING: SentryPricingTable = {
+  name: 'Sentry public pay-as-you-go pricing',
+  sources: ['https://docs.sentry.io/pricing/', 'https://sentry.io/pricing/'],
+  retrieved: '2026-11-20',
+  currency: 'USD',
+  notes: [
+    'Pay-as-you-go list prices in USD for volume above the plan\'s included quota. The plan subscription fee, reserved volume, discounts and Enterprise contracts are not included.',
+  ],
+  categories: {
+    errors: {
+      label: 'Errors',
+      unit: 'error',
+      unitPlural: 'errors',
+      included: 50_000,
+      tiers: {
+        team: [
+          { upTo: 50_000, unitUsd: 0 },
+          { upTo: 100_000, unitUsd: 0.0003625 },
+          { upTo: 500_000, unitUsd: 0.0002188 },
+          { upTo: 10_000_000, unitUsd: 0.0001875 },
+          { upTo: 20_000_000, unitUsd: 0.0001625 },
+          { upTo: null, unitUsd: 0.00015 },
+        ],
+        business: [
+          { upTo: 50_000, unitUsd: 0 },
+          { upTo: 100_000, unitUsd: 0.0011125 },
+          { upTo: 500_000, unitUsd: 0.000625 },
+          { upTo: 10_000_000, unitUsd: 0.000375 },
+          { upTo: 20_000_000, unitUsd: 0.000325 },
+          { upTo: null, unitUsd: 0.0003 },
+        ],
+      },
+    },
+    spans: {
+      label: 'Spans (tracing)',
+      unit: 'span',
+      unitPlural: 'spans',
+      included: 5_000_000,
+      tiers: {
+        team: [
+          { upTo: 5_000_000, unitUsd: 0 },
+          { upTo: 100_000_000, unitUsd: 0.000002 },
+          { upTo: null, unitUsd: 0.0000018 },
+        ],
+        business: [
+          { upTo: 5_000_000, unitUsd: 0 },
+          { upTo: 100_000_000, unitUsd: 0.000004 },
+          { upTo: null, unitUsd: 0.0000036 },
+        ],
+      },
+    },
+    replays: {
+      label: 'Session replays',
+      unit: 'replay',
+      unitPlural: 'replays',
+      included: 50,
+      tiers: {
+        team: SENTRY_REPLAY_TIERS,
+        business: SENTRY_REPLAY_TIERS,
+      },
+    },
+    attachments: {
+      label: 'Attachments',
+      unit: 'GB',
+      unitPlural: 'GB',
+      included: 1,
+      tiers: {
+        team: [
+          { upTo: 1, unitUsd: 0 },
+          { upTo: null, unitUsd: 0.3125 },
+        ],
+        business: [
+          { upTo: 1, unitUsd: 0 },
+          { upTo: null, unitUsd: 0.3125 },
+        ],
+      },
+    },
+  },
+};
+
