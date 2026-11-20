@@ -67,6 +67,7 @@ The demo data is a **fictional** company ("Tidebrook", hosts under the reserved 
 - [Offline mode](#offline-mode)
 - [How the estimates are calculated](#how-the-estimates-are-calculated)
 - [Pricing source](#pricing-source)
+- [Sentry (preview)](#sentry-preview)
 - [Privacy and security](#privacy-and-security)
 - [CLI reference](#cli-reference)
 - [Development](#development)
@@ -300,9 +301,69 @@ npx frumo-cli --project 12345 --pricing our-contract.json
 
 Products you don't list keep public prices. Product keys: `product_analytics`, `identified_events`, `session_replay`, `mobile_replay`, `feature_flags`, `surveys`, `error_tracking`. Tiers in PostHog's API shape (`up_to`, `unit_amount_usd`) are accepted too. Invalid files are rejected with every problem listed.
 
+## Sentry (preview)
+
+`frumo sentry` audits a **Sentry** bill the same way: usage in, public prices, ranked fixes with paste-ready `Sentry.init` snippets. It is a small, read-only v1; PostHog stays frumo's main focus.
+
+> Unofficial. Not affiliated with or endorsed by Functional Software, Inc. (Sentry). "Sentry" is used only to describe compatibility. Dollar figures are **estimates from public list prices, not your invoice**: the plan fee, reserved volume, mid-cycle plan changes, credits and Enterprise contracts all differ.
+
+```sh
+npx frumo-cli sentry demo                     # bundled fictional org, no account, no network
+read -rs SENTRY_AUTH_TOKEN && export SENTRY_AUTH_TOKEN
+npx frumo-cli sentry --org my-org             # live, read-only (Team prices)
+npx frumo-cli sentry --org my-org --plan business --days 14 --json > sentry-report.json
+```
+
+**Token.** Create a personal auth token in Sentry (User settings > Personal Tokens) with only `org:read`, `project:read` and `event:read`. It is read only from `SENTRY_AUTH_TOKEN`, never accepted as an argument, sent only in the `Authorization` header to `https://sentry.io` (or the https `--host` you pass for self-hosted Sentry or another region, e.g. `https://de.sentry.io`), never logged or saved, and redirects are not followed.
+
+**What it calls** (GET only; anything else is refused in code and in tests):
+
+| Request | Scope | Why |
+|---|---|---|
+| `GET /api/0/organizations/:org/projects/` | org:read | Project slugs and platforms |
+| `GET /api/0/organizations/:org/stats_v2/` (once per category: error, transaction, replay, attachment) | org:read | Volume by project and outcome (accepted, filtered, rate_limited, …) |
+| `GET /api/0/organizations/:org/issues/?query=&sort=freq` (up to 2 pages of 100) | event:read | Noisiest issues in any status, including ignored/archived |
+| `GET /api/0/projects/:org/:project/filters/` (5 busiest projects) | project:read | Which built-in inbound filters are on |
+| `GET /api/0/projects/:org/:project/keys/` (5 busiest projects) | project:read | Whether each client key has a rate limit |
+
+The client-keys endpoint also returns DSNs and the public/secret key. frumo keeps only the key label, whether it is active and its rate limit; it never prints, logs or saves a DSN or key, and refuses to build a snapshot that contains one.
+
+**What it looks at.**
+
+- **Ignored issues that still bill.** Ignoring (archiving) an issue hides it, but its events [still count toward your quota](https://docs.sentry.io/pricing/quotas/). frumo lists them with a dollar estimate and an `ignoreErrors` / `beforeSend` snippet to drop them in the SDK (no-regret).
+- **Noisy unresolved issues.** Any unresolved issue sending at least 5% of accepted errors: fix it, or drop known noise client-side (trade-off).
+- **Built-in inbound filters left off** in the busiest projects: browser extensions, web crawlers, localhost, health-check transactions. These are available on every plan. Custom inbound filters (by error message, release or IP) and Delete & Discard need Business or Enterprise (custom filters also on Trial), so frumo does not suggest them on `--plan team`. See [filtering](https://docs.sentry.io/concepts/data-management/filtering/) and [managing your event stream](https://docs.sentry.io/pricing/quotas/manage-event-stream-guide/).
+- **High-volume projects:** accepted volume and share of the estimated bill by project and category.
+- **Rate limits and spike protection.** Keys without a rate limit are flagged; per-key (DSN) rate limits are Business/Enterprise only. [Spike protection](https://docs.sentry.io/pricing/quotas/spike-protection/) covers errors, spans/transactions and attachments, not replays; it is set in Settings > Spike Protection and frumo never changes it.
+- **Sampling** (`tracesSampleRate`, and `sampleRate` for errors as a last resort) only when that volume costs enough to matter. Sampling hides events and needs a redeploy.
+
+**How the estimate works.** Accepted volume per category, scaled to a 30-day month, minus the plan's included volume (50K errors, 5M spans, 50 replays, 1 GB attachments on Team and Business), through Sentry's graduated pay-as-you-go bands. A fix's saving is the bill today minus the bill with that volume removed, at the same bands. Tracing volume is read from the `transaction` stats category and priced as one span per transaction, so the spans line is a lower bound when your organization is billed on spans. Attachments are reported in bytes and priced per decimal GB. Logs, metrics, profiling, Seer, cron and uptime monitors are not estimated.
+
+**Sentry prices**, checked 2026-11-20 from <https://docs.sentry.io/pricing/> and <https://sentry.io/pricing/> (per unit, above the included volume):
+
+| Category | Band | Team | Business |
+|---|---|---|---|
+| Errors | 50K–100K | $0.0003625 | $0.0011125 |
+| Errors | 100K–500K | $0.0002188 | $0.000625 |
+| Errors | 500K–10M | $0.0001875 | $0.000375 |
+| Errors | 10M–20M | $0.0001625 | $0.000325 |
+| Errors | over 20M | $0.00015 | $0.0003 |
+| Spans | 5M–100M | $0.000002 | $0.000004 |
+| Spans | over 100M | $0.0000018 | $0.0000036 |
+| Replays | 50–5K | $0.00375 | $0.00375 |
+| Replays | 5K–100K | $0.003563 | $0.003563 |
+| Replays | 100K–900K | $0.003206 | $0.003206 |
+| Replays | 900K–4.5M | $0.002886 | $0.002886 |
+| Replays | over 4.5M | $0.002453 | $0.002453 |
+| Attachments | over 1 GB | $0.3125 per GB | $0.3125 per GB |
+
+The table lives in `SENTRY_PUBLIC_PRICING` in [`src/pricing/public-pricing.ts`](src/pricing/public-pricing.ts). `--json` prints the `frumo.sentry-report/v1` shape in [`src/sentry/model.ts`](src/sentry/model.ts); `--save-snapshot` writes a `frumo.sentry-snapshot/v1` file you can re-run with `frumo sentry --from`. There is no HTML report for Sentry yet.
+
+The demo is a **fictional** organization ("Tidebrook" again, with invented projects, issues and counts). No real Sentry account or event data is used.
+
 ## Privacy and security
 
-- **Runs locally.** The only network peer is the PostHog host you choose (live mode). Demo and offline modes make no network requests. There is no telemetry, no analytics and no update check.
+- **Runs locally.** The only network peer is the PostHog host you choose (live mode), or the Sentry host for `frumo sentry --org`. Demo and offline modes (including `frumo sentry demo`) make no network requests. There is no telemetry, no analytics and no update check.
 - **The waitlist line.** The terminal summary and the HTML report end with one plain-text line, "Found this useful? Join the frumo waitlist", and a link (`?ref=cli` or `?ref=report`). frumo never requests that URL, opens a browser or loads anything for it; nothing is sent unless you click the link yourself. `--no-footer` leaves it out, and `--json` never includes it.
 - **Read-only.** Only `GET`s and the hard-coded HogQL `SELECT`s above. Write methods are refused in code and in tests.
 - **Your key** is read only from `FRUMO_API_KEY` (or the deprecated `HOGPOST_API_KEY` when that is unset), kept in a wrapper that prints as `[REDACTED]`, sent only in the `Authorization` header over HTTPS (plain HTTP only for localhost or with `--allow-http`), never logged, never written to disk, and redacted from every error message. Redirects are not followed, so the key can't be forwarded to another host.
@@ -317,6 +378,8 @@ Usage
   frumo --project <id> [--host <url>]     Live, read-only audit (key in FRUMO_API_KEY)
   frumo --from <snapshot.json|counts.csv> Offline audit from a saved snapshot or event-count CSV
   frumo --print-queries                   Show every HogQL query frumo can run, then exit
+  frumo sentry demo                       Sentry bill audit on bundled fictional data (preview)
+  frumo sentry --org <slug>               Live, read-only Sentry audit; see "frumo sentry --help"
 
 Live mode
   FRUMO_API_KEY              Personal API key (env var only; never pass it as an argument)
@@ -346,6 +409,11 @@ Estimates
   --dev-host <regex>         Hosts to treat as local/preview/staging (repeatable)
   --days <n>                 For CSV input: days the counts cover (default 30)
 
+Sentry (preview)
+  SENTRY_AUTH_TOKEN          Sentry personal auth token for frumo sentry (env var only)
+  Scopes: org:read, project:read, event:read (nothing wider)
+  --plan team|business       Sentry price list to estimate with (default team)
+
   -h, --help                 Show this help
   -v, --version              Show the version
 ```
@@ -372,6 +440,7 @@ TypeScript is pinned to 6.0.x because typescript-eslint supports TypeScript belo
 - `src/sources/`: demo fixture, `--from` files (JSON/CSV), and live mode (`live/client.ts` read-only client, `live/queries.ts` hard-coded HogQL, `live/collect.ts`)
 - `src/analysis/`: one analyzer per area in `analyzers/`, the cost model, fix ranking, snippets and the combined diff
 - `src/report/`: terminal, HTML and JSON output
+- `src/sentry/`: `frumo sentry` (snapshot format, GET-only client, collection, analysis, snippets, terminal report); its prices are in `src/pricing/public-pricing.ts`
 - `test/`: unit tests per module, a fake PostHog API, and repository rules (one price source, Node 18-safe APIs, documented env vars only, CI scripts runnable without a build)
 
 ## Disclaimer and licence

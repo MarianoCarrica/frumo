@@ -8,8 +8,9 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { API_KEY_ENV, LEGACY_API_KEY_ENV } from '../src/api-key.js';
 import { HELP } from '../src/args.js';
-import { PUBLIC_PRICING } from '../src/pricing/public-pricing.js';
-import { PRODUCT_KEYS } from '../src/pricing/types.js';
+import { PUBLIC_PRICING, SENTRY_PUBLIC_PRICING } from '../src/pricing/public-pricing.js';
+import { PRODUCT_KEYS, SENTRY_BILLED_CATEGORIES, SENTRY_PLANS } from '../src/pricing/types.js';
+import { SENTRY_TOKEN_ENV } from '../src/sentry/auth-token.js';
 import { VERSION } from '../src/version.js';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -68,11 +69,13 @@ describe('repository rules', () => {
 
   it('never reads environment variables other than the documented ones', () => {
     // HOGPOST_API_KEY is the deprecated pre-rename name, still read as a fallback for FRUMO_API_KEY.
-    const allowed = new Set(['FRUMO_API_KEY', 'HOGPOST_API_KEY', 'NO_COLOR', 'FORCE_COLOR', 'TERM']);
+    // SENTRY_AUTH_TOKEN is read only by `frumo sentry` (src/sentry/auth-token.ts).
+    const allowed = new Set(['FRUMO_API_KEY', 'HOGPOST_API_KEY', 'SENTRY_AUTH_TOKEN', 'NO_COLOR', 'FORCE_COLOR', 'TERM']);
     expect(API_KEY_ENV).toBe('FRUMO_API_KEY');
     expect(LEGACY_API_KEY_ENV).toBe('HOGPOST_API_KEY');
+    expect(SENTRY_TOKEN_ENV).toBe('SENTRY_AUTH_TOKEN');
     // env[CONSTANT] reads are resolved through the real constants, so the fallback read is checked too.
-    const constants: Record<string, string> = { API_KEY_ENV, LEGACY_API_KEY_ENV };
+    const constants: Record<string, string> = { API_KEY_ENV, LEGACY_API_KEY_ENV, SENTRY_TOKEN_ENV };
     const used = new Set<string>();
     for (const f of files) {
       for (const m of codeOnly(f.text).matchAll(/\b(?:env|process\.env)(?:\.([A-Z_]+)|\[['"]([A-Z_]+)['"]\])/g)) used.add(m[1] ?? m[2] ?? '');
@@ -88,6 +91,13 @@ describe('repository rules', () => {
       ).toBe(true);
     }
     expect(HELP, 'document the deprecated key variable in --help').toContain(LEGACY_API_KEY_ENV);
+    expect(HELP, 'document the Sentry token variable in --help').toContain(SENTRY_TOKEN_ENV);
+  });
+
+  it('reads the Sentry token from the environment only in src/sentry/auth-token.ts', () => {
+    const tokenRead = /\benv(?:\.SENTRY_AUTH_TOKEN\b|\[\s*SENTRY_TOKEN_ENV\s*\])/;
+    const offenders = files.filter((f) => f.path !== join('src', 'sentry', 'auth-token.ts') && tokenRead.test(codeOnly(f.text))).map((f) => f.path);
+    expect(offenders, 'Call readSentryToken() from src/sentry/auth-token.ts instead of reading SENTRY_AUTH_TOKEN directly').toEqual([]);
   });
 
   it('reads the API key from the environment only in src/api-key.ts', () => {
@@ -103,24 +113,33 @@ describe('repository rules', () => {
     expect(collect, 'collect.ts must go through the read-only client, never fetch() directly').not.toMatch(/\bfetch\(/);
   });
 
+  it('sends only GET requests from the Sentry client', () => {
+    const client = files.find((f) => f.path === join('src', 'sentry', 'client.ts'))?.text ?? '';
+    const methods = [...client.matchAll(/method:\s*['"]([A-Z]+)['"]/g)].map((m) => m[1]);
+    expect(methods.length, 'the Sentry client must set its method explicitly').toBeGreaterThan(0);
+    expect(methods.every((m) => m === 'GET'), 'frumo sentry is read-only: send GET only, never POST/PUT/PATCH/DELETE').toBe(true);
+    const collect = files.find((f) => f.path === join('src', 'sentry', 'collect.ts'))?.text ?? '';
+    expect(collect, 'src/sentry/collect.ts must go through SentryReadOnlyClient, never fetch() directly').not.toMatch(/\bfetch\(/);
+  });
+
   it('keeps the waitlist URL in src/report/waitlist.ts only', () => {
     const offenders = files.filter((f) => f.path !== join('src', 'report', 'waitlist.ts') && /frumo\.marianoventures\.com/i.test(f.text)).map((f) => f.path);
     expect(offenders, 'Import WAITLIST_URL or waitlistUrl() from src/report/waitlist.ts instead of copying the waitlist URL').toEqual([]);
   });
 
-  it('makes network requests only from the live PostHog client (no telemetry, no browser opening)', () => {
-    const client = join('src', 'sources', 'live', 'client.ts');
+  it('makes network requests only from the read-only PostHog and Sentry clients (no telemetry, no browser opening)', () => {
+    const clients = [join('src', 'sources', 'live', 'client.ts'), join('src', 'sentry', 'client.ts')];
     const netModule = /from\s+['"](?:node:)?(?:http|https|http2|net|tls|dgram|dns|child_process)['"]|import\(\s*['"](?:node:)?(?:http|https|http2|net|tls|dgram|dns|child_process)['"]/;
     const problems: string[] = [];
     for (const f of files) {
       if (netModule.test(f.text)) problems.push(`${f.path}: imports a network or process module`);
-      if (f.path !== client && /\bfetch\s*\(|\b(?:globalThis|window|global)\.fetch\b|\bXMLHttpRequest\b|\bsendBeacon\b/.test(codeOnly(f.text))) {
+      if (!clients.includes(f.path) && /\bfetch\s*\(|\b(?:globalThis|window|global)\.fetch\b|\bXMLHttpRequest\b|\bsendBeacon\b/.test(codeOnly(f.text))) {
         problems.push(`${f.path}: calls fetch`);
       }
     }
     expect(
       problems,
-      'frumo talks only to the PostHog host the user chose, through PostHogReadOnlyClient in src/sources/live/client.ts. Print a link instead of requesting a URL or opening a browser.',
+      'frumo talks only to the host the user chose, through PostHogReadOnlyClient (src/sources/live/client.ts) or SentryReadOnlyClient (src/sentry/client.ts). Print a link instead of requesting a URL or opening a browser.',
     ).toEqual([]);
   });
 
@@ -134,6 +153,9 @@ describe('repository rules', () => {
     expect(pkg.bugs).toEqual({ url: 'https://github.com/MarianoCarrica/frumo/issues' });
     expect(pkg.publishConfig).toEqual({ access: 'public' });
     expect(pkg.bin).toEqual({ frumo: 'dist/cli.js' });
+    expect(pkg.files, 'ship both demo fixtures, or "frumo demo" / "frumo sentry demo" fail after npm install').toEqual(
+      expect.arrayContaining(['fixtures/demo-snapshot.json', 'fixtures/sentry-demo-snapshot.json']),
+    );
     expect(String(pkg.name), "PostHog's terms bar third-party apps from using \"PostHog\" in their name").not.toMatch(/posthog/i);
     expect((pkg.engines as Record<string, string>).node).toBe('>=18.18');
     const deps = Object.keys((pkg.dependencies as Record<string, string> | undefined) ?? {});
@@ -152,6 +174,16 @@ describe('repository rules', () => {
     const workingOnThisRepo =
       '## Working on this repo\n\nRead [AGENTS.md](AGENTS.md) before making changes. Pull requests must pass the CI checks: `lint`, `typecheck` and `test`.';
     expect(readme.trimEnd().endsWith(workingOnThisRepo), 'README.md must end with the upstream "Working on this repo" section, verbatim').toBe(true);
+    expect(readme, 'README "Sentry" section must state when the Sentry prices were checked').toContain(`checked ${SENTRY_PUBLIC_PRICING.retrieved}`);
+    for (const category of SENTRY_BILLED_CATEGORIES) {
+      for (const plan of SENTRY_PLANS) {
+        for (const tier of SENTRY_PUBLIC_PRICING.categories[category].tiers[plan]) {
+          if (tier.unitUsd > 0) {
+            expect(readme, `README Sentry pricing table is missing ${category} (${plan}) at $${tier.unitUsd}; copy it from SENTRY_PUBLIC_PRICING`).toContain(`$${tier.unitUsd}`);
+          }
+        }
+      }
+    }
     for (const key of PRODUCT_KEYS) {
       for (const tier of PUBLIC_PRICING.products[key].tiers ?? []) {
         if (tier.unitUsd > 0) {

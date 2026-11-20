@@ -1,5 +1,6 @@
 import { parseArgs } from 'node:util';
 import { API_KEY_ENV, LEGACY_API_KEY_ENV } from './api-key.js';
+import { SENTRY_SCOPES, SENTRY_TOKEN_ENV } from './sentry/auth-token.js';
 import { DEFAULT_HOST } from './sources/live/hosts.js';
 import { MAX_DAYS } from './sources/live/queries.js';
 import { UsageError } from './util/errors.js';
@@ -46,6 +47,8 @@ Usage
   frumo --project <id> [--host <url>]     Live, read-only audit (key in ${API_KEY_ENV})
   frumo --from <snapshot.json|counts.csv> Offline audit from a saved snapshot or event-count CSV
   frumo --print-queries                   Show every HogQL query frumo can run, then exit
+  frumo sentry demo                       Sentry bill audit on bundled fictional data (preview)
+  frumo sentry --org <slug>               Live, read-only Sentry audit; see "frumo sentry --help"
 
 Live mode
   ${API_KEY_ENV.padEnd(27)}Personal API key (env var only; never pass it as an argument)
@@ -74,6 +77,11 @@ Estimates
   --app-url <regex>          URLs to treat as app pages (repeatable; wins over marketing)
   --dev-host <regex>         Hosts to treat as local/preview/staging (repeatable)
   --days <n>                 For CSV input: days the counts cover (default 30)
+
+Sentry (preview)
+  ${SENTRY_TOKEN_ENV.padEnd(27)}Sentry personal auth token for frumo sentry (env var only)
+  Scopes: ${SENTRY_SCOPES.join(', ')} (nothing wider)
+  --plan team|business       Sentry price list to estimate with (default team)
 
   -h, --help                 Show this help
   -v, --version              Show the version
@@ -121,7 +129,11 @@ export function parseCliArgs(argv: readonly string[]): CliArgs {
   if (positionals.length > 1) throw new UsageError(`Unexpected arguments: ${positionals.slice(1).join(' ')}`);
   const command = positionals[0];
   if (command !== undefined && !['demo', 'audit', 'queries', 'help'].includes(command)) {
-    throw new UsageError(`Unknown command "${command}". Commands: demo, audit (default), queries, help.`);
+    throw new UsageError(
+      command === 'sentry'
+        ? 'Put "sentry" first, e.g. "frumo sentry demo" or "frumo sentry --org <slug>".'
+        : `Unknown command "${command}". Commands: demo, audit (default), queries, sentry, help.`,
+    );
   }
 
   let mode: Mode;

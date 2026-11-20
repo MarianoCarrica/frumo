@@ -11,7 +11,7 @@ export interface TerminalOptions {
   footer?: boolean;
 }
 
-interface Paint {
+export interface Paint {
   bold(s: string): string;
   dim(s: string): string;
   green(s: string): string;
@@ -20,15 +20,15 @@ interface Paint {
   cyan(s: string): string;
 }
 
-function paint(enabled: boolean): Paint {
+export function paint(enabled: boolean): Paint {
   const wrap = (open: number, close: number) => (s: string) => (enabled ? `\u001b[${open}m${s}\u001b[${close}m` : s);
   return { bold: wrap(1, 22), dim: wrap(2, 22), green: wrap(32, 39), yellow: wrap(33, 39), red: wrap(31, 39), cyan: wrap(36, 39) };
 }
 
 const ANSI = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g');
 const visible = (s: string): number => s.replace(ANSI, '').length;
-const padEnd = (s: string, n: number): string => s + ' '.repeat(Math.max(0, n - visible(s)));
-const padStart = (s: string, n: number): string => ' '.repeat(Math.max(0, n - visible(s))) + s;
+export const padEnd = (s: string, n: number): string => s + ' '.repeat(Math.max(0, n - visible(s)));
+export const padStart = (s: string, n: number): string => ' '.repeat(Math.max(0, n - visible(s))) + s;
 
 export function wrapText(text: string, width: number, indent = ''): string[] {
   const words = text.split(/\s+/).filter(Boolean);

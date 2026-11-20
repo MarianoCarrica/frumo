@@ -31,8 +31,11 @@ export class Secret {
   }
 }
 
-/** PostHog credential formats: personal (phx_), project secret (phs_), OAuth (pha_/phr_), project token (phc_). */
-const TOKEN_PATTERN = /\bph[xsarc]_[A-Za-z0-9_-]{6,}/g;
+/**
+ * Credential formats: PostHog personal (phx_), project secret (phs_), OAuth (pha_/phr_), project
+ * token (phc_); Sentry user (sntryu_) and organization (sntrys_) auth tokens.
+ */
+const TOKEN_PATTERN = /\bph[xsarc]_[A-Za-z0-9_-]{6,}|\bsntry[us]_[A-Za-z0-9_+/=-]{6,}/g;
 
 /**
  * Removes credentials from text that may be shown to the user or written somewhere:
@@ -51,5 +54,5 @@ export function redact(text: string, secrets: ReadonlyArray<Secret | string> = [
 
 /** True when a CLI argument looks like a pasted credential (which would land in shell history). */
 export function looksLikeCredential(arg: string): boolean {
-  return /(^|[=\s])ph[xsar]_[A-Za-z0-9]{20,}($|\s)/.test(arg);
+  return /(^|[=\s])ph[xsar]_[A-Za-z0-9]{20,}($|\s)/.test(arg) || /(^|[=\s])sntry[us]_[A-Za-z0-9_+/=-]{20,}($|\s)/.test(arg);
 }
