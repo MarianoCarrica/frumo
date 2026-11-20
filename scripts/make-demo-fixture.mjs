@@ -215,7 +215,7 @@ const flag = (key, extra = {}) => ({
 const snapshot = {
   schema: 'frumo.snapshot/v1',
   generatedAt: now,
-  source: { kind: 'demo', host: null, toolVersion: '0.1.0', fictional: true, label: 'Tidebrook (fictional B2B SaaS)' },
+  source: { kind: 'demo', host: null, toolVersion: '0.2.0', fictional: true, label: 'Tidebrook (fictional B2B SaaS)' },
   project: { id: '21345', name: 'Tidebrook (production)' },
   period: { days: 30, start: '2026-10-19T09:00:00.000Z', end: now },
   orgUsage: [

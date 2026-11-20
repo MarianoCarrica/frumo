@@ -179,7 +179,7 @@ The format is `frumo.snapshot/v1`, defined and validated in [`src/snapshot.ts`](
 {
   "schema": "frumo.snapshot/v1",
   "generatedAt": "2026-11-18T09:00:00.000Z",
-  "source": { "kind": "live", "host": "https://eu.posthog.com", "toolVersion": "0.1.0", "fictional": false, "label": null },
+  "source": { "kind": "live", "host": "https://eu.posthog.com", "toolVersion": "0.2.0", "fictional": false, "label": null },
   "project": { "id": "12345", "name": "Production" },
   "period": { "days": 30, "start": "…", "end": "…" },
   // Billing usage per project (billing:read). The audited project has "audited": true.
