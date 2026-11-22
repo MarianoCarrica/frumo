@@ -2,7 +2,7 @@
 
 **Find what's driving your PostHog bill and get ready-to-paste fixes, each with a dollar estimate.**
 A free, open-source, read-only CLI that runs on your own machine. Built for PostHog, not affiliated.
-Website and waitlist: [frumo.marianoventures.com](https://frumo.marianoventures.com)
+Website and waitlist: [frumo.marianoventures.com](https://frumo.marianoventures.com/?ref=github)
 
 > **Unofficial. Not affiliated with or endorsed by PostHog Inc. Works with PostHog Cloud (US/EU) and self-hosted PostHog.**
 > "PostHog" is used only to describe compatibility. frumo is an independent project.
