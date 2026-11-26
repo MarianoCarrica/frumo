@@ -82,10 +82,13 @@ Node.js 18.18 or newer. No account needed for the demo:
 npx frumo-cli demo                          # terminal summary
 npx frumo-cli demo --html report.html       # self-contained HTML report
 npx frumo-cli demo --json > report.json     # machine-readable
+npx frumo-cli sentry demo                   # Sentry (preview) demo
 # or: npm i -g frumo-cli   then   frumo demo
 ```
 
-`frumo-cli` is not on npm yet. From a clone:
+`frumo-cli` is on npm; the usual way to run it is `npx` (no global install needed).
+
+From a clone (development):
 
 ```sh
 npm install
